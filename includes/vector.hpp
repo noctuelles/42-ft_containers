@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/08/27 00:18:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/08/28 22:46:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,9 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <cstring>
+#include <cstdlib>
+#include <algorithm>
 
 namespace ft
 {
@@ -106,7 +109,7 @@ namespace ft
 
 					iterator	operator++(void)
 					{
-						return (iterator(_ptr++));
+						return (iterator(++_ptr));
 					}
 
 					iterator	operator++(int)
@@ -115,6 +118,20 @@ namespace ft
 
 						pSave = _ptr;
 						_ptr++;
+						return (iterator(pSave));
+					}
+
+					iterator	operator--(void)
+					{
+						return (iterator(--_ptr));
+					}
+
+					iterator	operator--(int)
+					{
+						pointer	pSave;
+
+						pSave = _ptr;
+						_ptr--;
 						return (iterator(pSave));
 					}
 
@@ -163,6 +180,8 @@ namespace ft
 
 			typedef typename allocator_type::reference						reference;
 			typedef typename allocator_type::const_reference				const_reference;
+			typedef typename allocator_type::pointer						pointer;
+			typedef typename allocator_type::const_pointer					const_pointer;
 
 			typedef typename ft::iterator_traits<iterator>::difference_type	difference_type;
 			typedef std::size_t												size_type;
@@ -186,6 +205,16 @@ namespace ft
 				_allocator.deallocate(_array, _capacity);
 			}
 
+			vector&	operator=(const vector& rhs)
+			{
+				std::cout << "Vector assignement called.\n";
+				_capacity = rhs._capacity;
+				_size = rhs._size;
+				_allocator = rhs._allocator;
+				_array = rhs._array;
+				return (*this);
+			}
+
 			// ## Iterator ##
 
 			iterator	begin(void)
@@ -200,6 +229,34 @@ namespace ft
 				else
 					return (iterator(&_array[_size]));
 			}
+
+			// ## Element Access ##
+
+			reference		operator[](size_type n)			{ return (this->_array[n]); }
+			const reference	operator[](size_type n) const	{ return (this->_array[n]); }
+
+			reference	at(size_type n)
+			{
+				if (n >= _size)
+					throw (std::out_of_range("vector::at"));
+				return (_array[n]);
+			}
+
+			const reference	at(size_type n) const
+			{
+				if (n >= _size)
+					throw (std::out_of_range("vector::at"));
+				return (_array[n]);
+			}
+
+			reference		front(void)			{ return (_array[0]); }
+			const reference	front(void) const	{ return (_array[0]); }
+
+			reference		back(void)			{ return (_array[_size - 1]); }
+			const reference	back(void) const	{ return (_array[_size - 1]); }
+
+			T*			data(void)			{ return (_array); }
+			const T*	data(void) const	{ return (reinterpret_cast<const T*>(_array)); }
 
 			// ## Capacity ##
 
@@ -244,7 +301,115 @@ namespace ft
 				_array[_size++] = i;
 			}
 
-			void	clear(void) { this->_destructAll(); }
+			// undefined behavior : when the container is empty (size == 0).
+			void	pop_back(void)	{ _allocator.destroy(_array[--_size]); }
+
+			void	clear(void)		{ this->_destructAll(); }
+
+			template <class InputIterator>
+			void	assign(InputIterator first, InputIterator last)
+			{
+				difference_type	size;
+
+				size = last - first;
+			}
+
+			void	assign(size_type n, const value_type& val)
+			{
+				if (n > _capacity)
+					this->_reAlloc_noSave(n);
+				_size = n;
+				for (iterator it = this->begin(); it != this->end(); it++)
+					*it = val;
+			}
+
+			// Find the address of the element to be erased.
+			// Move the element past the
+
+			iterator	erase(iterator position)
+			{
+				_allocator.destroy(&(*position));
+				if (position != this->end())
+				{
+					std::copy(position + 1, this->end(), position);
+					_size--;
+				}
+				return (position);
+			}
+
+			iterator	erase(iterator first, iterator last)
+			{
+				difference_type	spanDistance;
+
+				spanDistance = last - first;
+				for (iterator it = first; it != last; it++)
+					_allocator.destroy(&*it);
+				if (last != this->end())
+					std::copy(last, this->end(), first);
+				_size -= spanDistance;
+
+				return (first);
+			}
+
+			iterator	insert(iterator pos, size_type count, const T& value)
+			{
+				difference_type	distanceFromBeg;
+				iterator		fillStop;
+
+				std::cout << "call to insert\n";
+				distanceFromBeg = 0;
+				if (_size + count > _capacity)
+				{
+					// If a re-allocation begins, update the iterator so it's referring to the same element.
+					distanceFromBeg = &*pos - &(*this->begin()) ;
+					this->_reAlloc(_size + count);
+					pos = iterator(&_array[distanceFromBeg]);
+				}
+				if (pos != this->end())
+					std::copy_backward(pos, this->end(), this->end() + count);
+				fillStop = iterator(pos + count);
+				for (iterator it = pos; it != fillStop; it++)
+					_allocator.construct(&*it, value);
+				_size += count;
+				return (pos);
+			}
+
+
+
+			template< class InputIterator >
+			void	insert(iterator pos, InputIterator first, InputIterator last)
+			{
+				difference_type	spanDistance;
+				difference_type	distanceFromBeg;
+
+				spanDistance = last - first;
+				distanceFromBeg = 0;
+				if (_size + spanDistance > _capacity)
+				{
+					// If a re-allocation begins, update the iterator so it's referring to the same element.
+					distanceFromBeg = &*pos - &(*this->begin()) ;
+					this->_reAlloc(_size + spanDistance);
+					pos = iterator(&_array[distanceFromBeg]);
+				}
+			}
+
+			void	swap(vector& x)
+			{
+				allocator_type	allocator  = _allocator;
+				size_type		size       = _size;
+				size_type		capacity   = _capacity;
+				T*				array      = _array;
+
+				_allocator = x._allocator;
+				_size = x._size;
+				_capacity = x._capacity;
+				_array = x._array;
+
+				x._allocator = allocator;
+				x._size = size;
+				x._capacity = capacity;
+				x._array = array;
+			}
 
 			// ## Allocator ##
 
@@ -253,10 +418,7 @@ namespace ft
 				return (_allocator);
 			}
 
-			reference	operator[](size_type n)
-			{
-				return (this->_array[n]);
-			}
+
 
 		private:
 			allocator_type	_allocator;
@@ -285,6 +447,21 @@ namespace ft
 					_allocator.construct(&pTemp[i], _array[i]);
 					_allocator.destroy(&_array[i]);
 				}
+				if (_array)
+					_allocator.deallocate(_array, _capacity);
+				_capacity = reAllocSize;
+				_array = pTemp;
+			}
+
+			void	_reAlloc_noSave(size_type n)
+			{
+				T*			pTemp;
+				size_type	reAllocSize;
+
+				reAllocSize = this->_getReAllocSize(n);
+				pTemp = _allocator.allocate(reAllocSize);
+				for (size_type i = 0; i < _size; i++)
+					_allocator.destroy(&_array[i]);
 				if (_array)
 					_allocator.deallocate(_array, _capacity);
 				_capacity = reAllocSize;
