@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/05 13:41:18 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/05 17:20:07 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,21 @@ namespace ft
 	{
 		public:
 
+			class iterator;
+
+			typedef T														value_type;
+			typedef Alloc													allocator_type;
+
+			typedef typename allocator_type::reference						reference;
+			typedef typename allocator_type::const_reference				const_reference;
+			typedef typename allocator_type::pointer						pointer;
+			typedef typename allocator_type::const_pointer					const_pointer;
+
+			typedef typename ft::iterator_traits<iterator>::difference_type	difference_type;
+			typedef ft::reverse_iterator<iterator>							reverse_iterator;
+
+			typedef std::size_t												size_type;
+
 			/*	default-constructible, copy-constructible, copy-assignable,
 			 *	destructible.
 			 *	random access iterator are behaving like a normal pointer.
@@ -42,25 +57,37 @@ namespace ft
 					using typename ft::iterator<ft::random_access_iterator_tag, T>::difference_type;
 
 					iterator() : _ptr(NULL) {};
-					iterator(T *ptr) : _ptr(ptr) {};
-					iterator(const iterator &it) : _ptr(it._ptr) {};
+					explicit iterator(T *ptr) : _ptr(ptr) {};
+					explicit iterator(const iterator &it) : _ptr(it._ptr) {};
 					~iterator() {};
 
-					iterator& operator=(iterator const& rhs)
+					iterator& operator=(const iterator& rhs)
 					{
 						_ptr = rhs._ptr;
 						return (*this);
 					}
 
-					iterator&	operator+=(iterator const& rhs)
+					iterator&	operator+=(const iterator& rhs)
 					{
-						this->_ptr += rhs._ptr;
+						_ptr += rhs._ptr;
 						return (*this);
 					}
 
-					iterator&	operator-=(iterator const& rhs)
+					iterator&	operator+=(const difference_type& n)
 					{
-						this->_ptr -= rhs._ptr;
+						_ptr += n;
+						return (*this);
+					}
+
+					iterator&	operator-=(const iterator& rhs)
+					{
+						_ptr -= rhs._ptr;
+						return (*this);
+					}
+
+					iterator&	operator-=(const difference_type& n)
+					{
+						_ptr -= n;
 						return (*this);
 					}
 
@@ -68,12 +95,22 @@ namespace ft
 
 					bool	operator==(const iterator& rhs)
 					{
-						return (this->_ptr == rhs._ptr);
+						return (_ptr == rhs._ptr);
 					}
 
 					bool	operator!=(const iterator& rhs)
 					{
-						return (!(_ptr == rhs._ptr));
+						return (_ptr != rhs._ptr);
+					}
+
+					bool	operator<(const iterator& rhs)
+					{
+						return (_ptr < rhs._ptr);
+					}
+
+					bool	operator<=(const iterator& rhs)
+					{
+						return (_ptr <= rhs._ptr);
 					}
 
 					bool	operator>(const iterator& rhs)
@@ -81,35 +118,27 @@ namespace ft
 						return (_ptr > rhs._ptr);
 					}
 
-					bool	operator<(const iterator& rhs)
-					{
-						return (!(_ptr > rhs._ptr));
-					}
-
 					bool	operator>=(const iterator& rhs)
 					{
-						return (this->_ptr >= rhs._ptr);
-					}
-
-					bool	operator<=(const iterator& rhs)
-					{
-						return (this->_ptr <= rhs._ptr);
+						return (_ptr >= rhs._ptr);
 					}
 
 					reference	operator*(void) const
 					{
-						return (*this->_ptr);
+						return (*_ptr);
 					}
+
 					pointer	operator->(void) const
 					{
-						return (this->_ptr);
+						return (_ptr);
 					}
 
 					/* Unary Operators */
 
-					iterator	operator++(void)
+					iterator&	operator++(void)
 					{
-						return (iterator(++_ptr));
+						_ptr++;
+						return (*this);
 					}
 
 					iterator	operator++(int)
@@ -121,9 +150,10 @@ namespace ft
 						return (iterator(pSave));
 					}
 
-					iterator	operator--(void)
+					iterator&	operator--(void)
 					{
-						return (iterator(--_ptr));
+						_ptr--;
+						return (*this);
 					}
 
 					iterator	operator--(int)
@@ -141,10 +171,12 @@ namespace ft
 					{
 						return (iterator(_ptr + rhs));
 					}
+
 					iterator	operator+(const iterator& rhs) const
 					{
 						return (iterator(_ptr + rhs._ptr));
 					}
+
 					difference_type	operator+(const iterator &rhs)
 					{
 						return (_ptr + rhs._ptr);
@@ -162,30 +194,172 @@ namespace ft
 					{
 						return (_ptr - rhs._ptr);
 					}
-					
+
 					/* Subscripting Operator */
 
 					reference	operator[](size_t i)
 					{
-						return (this->_ptr[i]);
+						return (_ptr[i]);
 					}
 
 				private:
 					T*		_ptr;
 			};
 
-			typedef T														value_type;
-			typedef Alloc													allocator_type;
+			class const_iterator : public ft::iterator<ft::random_access_iterator_tag, T>
+			{
+				public:
 
-			typedef typename allocator_type::reference						reference;
-			typedef typename allocator_type::const_reference				const_reference;
-			typedef typename allocator_type::pointer						pointer;
-			typedef typename allocator_type::const_pointer					const_pointer;
+					using typename ft::iterator<ft::random_access_iterator_tag, T>::reference;
+					using typename ft::iterator<ft::random_access_iterator_tag, T>::pointer;
+					using typename ft::iterator<ft::random_access_iterator_tag, T>::difference_type;
 
-			typedef typename ft::iterator_traits<iterator>::difference_type	difference_type;
-			typedef ft::reverse_iterator<iterator>							reverse_iterator;
+					const_iterator() : _ptr(NULL) {};
+					const_iterator(T *ptr) : _ptr(ptr) {};
+					const_iterator(const iterator &it) : _ptr(it._ptr) {};
+					const_iterator(const const_iterator &it) : _ptr(it._ptr) {};
+					~const_iterator() {};
 
-			typedef std::size_t												size_type;
+					const_iterator& operator=(const iterator& rhs)
+					{
+						_ptr = rhs._ptr;
+						return (*this);
+					}
+
+					const_iterator& operator=(const const_iterator& rhs)
+					{
+						_ptr = rhs._ptr;
+						return (*this);
+					}
+
+					const_iterator&	operator+=(const_iterator const& rhs)
+					{
+						_ptr += rhs._ptr;
+						return (*this);
+					}
+
+					const_iterator&	operator-=(const_iterator const& rhs)
+					{
+						_ptr -= rhs._ptr;
+						return (*this);
+					}
+
+					/* Relational Operators */
+
+					bool	operator==(const const_iterator& rhs)
+					{
+						return (_ptr == rhs._ptr);
+					}
+
+					bool	operator!=(const const_iterator& rhs)
+					{
+						return (_ptr != rhs._ptr);
+					}
+
+					bool	operator<(const const_iterator& rhs)
+					{
+						return (_ptr < rhs._ptr);
+					}
+
+					bool	operator<=(const const_iterator& rhs)
+					{
+						return (_ptr <= rhs._ptr);
+					}
+
+					bool	operator>(const const_iterator& rhs)
+					{
+						return (_ptr > rhs._ptr);
+					}
+
+					bool	operator>=(const const_iterator& rhs)
+					{
+						return (_ptr >= rhs._ptr);
+					}
+
+					const reference	operator*(void) const
+					{
+						return (*_ptr);
+					}
+
+					pointer	operator->(void) const
+					{
+						return (_ptr);
+					}
+
+					/* Unary Operators */
+
+					const_iterator&	operator++(void)
+					{
+						_ptr++;
+						return (*this);
+					}
+
+					const_iterator	operator++(int)
+					{
+						pointer	pSave;
+
+						pSave = _ptr;
+						_ptr++;
+						return (const_iterator(pSave));
+					}
+
+					const_iterator&	operator--(void)
+					{
+						_ptr--;
+						return (*this);
+					}
+
+					const_iterator	operator--(int)
+					{
+						pointer	pSave;
+
+						pSave = _ptr;
+						_ptr--;
+						return (const_iterator(pSave));
+					}
+
+					/* Binary Operators */
+
+					const_iterator	operator+(const difference_type& rhs) const
+					{
+						return (const_iterator(_ptr + rhs));
+					}
+
+					const_iterator	operator+(const const_iterator& rhs) const
+					{
+						return (const_iterator(_ptr + rhs._ptr));
+					}
+
+					difference_type	operator+(const const_iterator &rhs)
+					{
+						return (_ptr + rhs._ptr);
+					}
+
+					const_iterator	operator-(const difference_type& rhs) const
+					{
+						return (const_iterator(_ptr - rhs));
+					}
+					const_iterator	operator-(const const_iterator& rhs) const
+					{
+						return (const_iterator(_ptr - rhs._ptr));
+					}
+					difference_type	operator-(const const_iterator &rhs)
+					{
+						return (_ptr - rhs._ptr);
+					}
+
+					/* Subscripting Operator */
+
+					reference	operator[](size_t i)
+					{
+						return (_ptr[i]);
+					}
+
+				private:
+					T*		_ptr;
+			};
+
+
 
 			// Default constructor
 			explicit	vector(const allocator_type &alloc = allocator_type())

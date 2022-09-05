@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/25 14:20:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/05 13:55:23 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/05 16:47:58 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,12 +92,12 @@ namespace ft
 		{
 			public:
 
-				typedef Iterator												iterator_type;
-				typedef typename iterator_traits<Iterator>::iterator_category	iterator_category;
-				typedef typename iterator_traits<Iterator>::value_type			value_type;
-				typedef typename iterator_traits<Iterator>::difference_type		difference_type;
-				typedef typename iterator_traits<Iterator>::pointer				pointer;
-				typedef typename iterator_traits<Iterator>::reference			reference;
+				typedef Iterator													iterator_type;
+				typedef typename ft::iterator_traits<Iterator>::iterator_category	iterator_category;
+				typedef typename ft::iterator_traits<Iterator>::value_type			value_type;
+				typedef typename ft::iterator_traits<Iterator>::difference_type		difference_type;
+				typedef typename ft::iterator_traits<Iterator>::pointer				pointer;
+				typedef typename ft::iterator_traits<Iterator>::reference			reference;
 
 				// Constructors
 
