@@ -1,11 +1,13 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <utility>
 #include <vector>
 #include <iostream>
 #include <stdlib.h>
 #include "Iterator.hpp"
 #include "vector.hpp"
+#include "pair.hpp"
 #include <typeinfo>
 #include <stdio.h>
 
@@ -25,19 +27,26 @@ class	Dummy
 int main(void)
 {
 	ft::vector<int> v;
-	std::vector<int> v1;
-	ft::vector<int>::iterator beg, last, end;
+	std::vector<int> std_v;
+	ft::vector<int>::iterator cat;
 
-	v.push_back(12);
-	v.push_back(16);
-	v.push_back(24);
-	v.push_back(42);
+	v.push_back(2);
+	v.push_back(3);
+	v.push_back(4);
+	v.push_back(5);
 
-	v.insert(v.begin() + 2, 3, 99);
-	for (ft::vector<int>::iterator i = v.begin(); i != v.end(); i++)
-	{
-		std::cout << *i << '\n';
-	}
+	std_v.push_back(2);
+	std_v.push_back(3);
+	std_v.push_back(4);
+	std_v.push_back(5);
+
+	ft::reverse_iterator<ft::vector<int>::iterator> ri (v.rbegin());
+	ft::reverse_iterator<ft::vector<int>::iterator> ri2 = ri - 2;
+	std::reverse_iterator<std::vector<int>::iterator> std_ri(std_v.rbegin());
+	std::reverse_iterator<std::vector<int>::iterator> std_ri2 = std_ri;
+
+	for ( ; ri != v.rend(); ri++)
+		std::cout << *ri << '\n';
 
 	std::cout << "Current allocated size : " << v.capacity() << '\n';
 	std::cout << "Current           size : " << v.size() << '\n';

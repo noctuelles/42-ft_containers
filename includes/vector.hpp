@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/08/28 22:46:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/05 13:41:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,17 +73,17 @@ namespace ft
 
 					bool	operator!=(const iterator& rhs)
 					{
-						return (this->_ptr != rhs._ptr);
+						return (!(_ptr == rhs._ptr));
 					}
 
 					bool	operator>(const iterator& rhs)
 					{
-						return (this->_ptr > rhs._ptr);
+						return (_ptr > rhs._ptr);
 					}
 
 					bool	operator<(const iterator& rhs)
 					{
-						return (this->_ptr < rhs._ptr);
+						return (!(_ptr > rhs._ptr));
 					}
 
 					bool	operator>=(const iterator& rhs)
@@ -171,8 +171,7 @@ namespace ft
 					}
 
 				private:
-
-					T		*_ptr;
+					T*		_ptr;
 			};
 
 			typedef T														value_type;
@@ -184,6 +183,8 @@ namespace ft
 			typedef typename allocator_type::const_pointer					const_pointer;
 
 			typedef typename ft::iterator_traits<iterator>::difference_type	difference_type;
+			typedef ft::reverse_iterator<iterator>							reverse_iterator;
+
 			typedef std::size_t												size_type;
 
 			// Default constructor
@@ -228,6 +229,16 @@ namespace ft
 					return (begin());
 				else
 					return (iterator(&_array[_size]));
+			}
+
+			reverse_iterator	rbegin(void)
+			{
+				return (reverse_iterator(end()));
+			}
+
+			reverse_iterator	rend(void)
+			{
+				return (reverse_iterator(begin()));
 			}
 
 			// ## Element Access ##
