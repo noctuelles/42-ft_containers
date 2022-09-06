@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/06 08:06:43 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/06 08:47:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,19 @@
 # define VECTOR_HPP
 
 #include "Iterator.hpp"
+#include <cstddef>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <cstring>
 #include <cstdlib>
 #include <algorithm>
+
+/*	TODO:
+ * Modifiers ;
+ * Iterators DONE;
+ * Capacity  DONE;
+ */
 
 namespace ft
 {
@@ -29,6 +36,7 @@ namespace ft
 		public:
 
 			class iterator;
+			class const_iterator;
 
 			typedef T														value_type;
 			typedef Alloc													allocator_type;
@@ -38,10 +46,11 @@ namespace ft
 			typedef typename allocator_type::pointer						pointer;
 			typedef typename allocator_type::const_pointer					const_pointer;
 
-			typedef typename ft::iterator_traits<iterator>::difference_type	difference_type;
 			typedef ft::reverse_iterator<iterator>							reverse_iterator;
+			typedef ft::reverse_iterator<const_iterator>					const_reverse_iterator;
 
 			typedef std::size_t												size_type;
+			typedef	std::ptrdiff_t											difference_type;
 
 			// ############# Iterators implementation #############
 
@@ -364,22 +373,40 @@ namespace ft
 					pointer	_ptr;
 			};
 
-			// End of iterators implementation.
+			// ############################ Constructors and destructor ############################
 
-			// Default constructor
-			explicit	vector(const allocator_type &alloc = allocator_type())
+			// Default constructor. Constructs an empty container with a default-constructed allocator.
+			vector(void) : _allocator(allocator_type()), _size(0), _capacity(0), _array(NULL) {};
+
+			// Constructs an empty container with the given allocator alloc.
+			explicit vector(const allocator_type &alloc)
 				: _allocator(alloc), _size(0), _capacity(0), _array(NULL) {}
 
-			// Fill constructor
-			// const value_type &val = value_type() : calls the default constructor if no argument is provided.
-			explicit	vector(size_type n, const value_type &val = value_type(),
+
+			// Constructs the container with count copies of elements with value val.
+			explicit vector(size_type n, const value_type &val = value_type(),
 					const allocator_type &alloc = allocator_type())
-				: _allocator(alloc), _size(n), _capacity(n)
+				: _allocator(alloc), _size(n), _capacity(n), _array(NULL)
 			{
-				(void) val;
+				this->resize(n, val);
 			}
 
-			~vector()
+			// Constructs the container with the contents of the range [first, last).
+			template <class InputIt>
+				vector(InputIt first, InputIt last, const allocator_type& alloc = allocator_type())
+				: _allocator(alloc), _size(0), _capacity(0), _array(NULL)
+				{
+					this->_reAlloc(std::distance(first, last));
+				}
+
+			// Copy-assignement constructor
+			vector(const vector& other) : _allocator(other._allocator), _size(other._size), _capacity(other._capacity)
+			{
+				// Perform deep-copy...
+			}
+
+			// Destructor
+			~vector(void)
 			{
 				this->_destroyAll();
 				_allocator.deallocate(_array, _capacity);
@@ -387,13 +414,15 @@ namespace ft
 
 			vector&	operator=(const vector& rhs)
 			{
-				std::cout << "Vector assignement called.\n";
+				// TODO: perform deep-copy.
 				_capacity = rhs._capacity;
 				_size = rhs._size;
 				_allocator = rhs._allocator;
 				_array = rhs._array;
 				return (*this);
 			}
+
+			// ############################ Iterators ############################
 
 			// Return an iterator to the first element of the array.
 			// If the containers is empty, begin() == end()
@@ -428,21 +457,45 @@ namespace ft
 					return (const_iterator(&_array[_size]));
 			}
 
+			/* Returns a reverse_iterator to past the end element of the array. */
 			reverse_iterator	rbegin(void)
 			{
 				return (reverse_iterator(end()));
 			}
 
+			/* Returns a const_reverse_iterator to past the end element of the array. */
+			const_reverse_iterator	rbegin(void) const
+			{
+				return (const_reverse_iterator(end()));
+			}
+
+			/* Returns a reverse_iterator to the first element of the array. */
 			reverse_iterator	rend(void)
 			{
 				return (reverse_iterator(begin()));
 			}
 
-			// ## Element Access ##
+			/* Returns a reverse_iterator to the first element of the array. */
+			const_reverse_iterator	rend(void) const
+			{
+				return (const_reverse_iterator(begin()));
+			}
 
-			reference		operator[](size_type n)			{ return (this->_array[n]); }
-			const reference	operator[](size_type n) const	{ return (this->_array[n]); }
+			// ############################ Element Access ############################
 
+			// Returns a reference to the n-th element.
+			reference		operator[](size_type n)
+			{
+				return (_array[n]);
+			}
+
+			// Returns a const_reference to the n-th element.
+			const_reference	operator[](size_type n) const
+			{
+				return (_array[n]);
+			}
+
+			// Same as operator[], but throws an exception if n >= size.
 			reference	at(size_type n)
 			{
 				if (n >= _size)
@@ -450,28 +503,49 @@ namespace ft
 				return (_array[n]);
 			}
 
-			const reference	at(size_type n) const
+			// Same as const operator[], but throws an exception if n >= size.
+			const_reference	at(size_type n) const
 			{
 				if (n >= _size)
 					throw (std::out_of_range("vector::at"));
 				return (_array[n]);
 			}
 
+			// Returns a reference to the first element of the array.
 			reference		front(void)	
 			{
 				return (_array[0]);
 			}
 
-			const reference	front(void) const
+			// Returns a const_reference to the first element of the array.
+			const_reference	front(void) const
 			{
 				return (_array[0]);
 			}
 
-			reference		back(void)			{ return (_array[_size - 1]); }
-			const reference	back(void) const	{ return (_array[_size - 1]); }
+			// Returns a reference to the last element in the container.
+			reference	back(void)
+			{
+				return (_array[_size - 1]);
+			}
 
-			T*			data(void)			{ return (_array); }
-			const T*	data(void) const	{ return (reinterpret_cast<const T*>(_array)); }
+			// Returns a const_reference to the last element in the container.
+			const_reference	back(void) const
+			{
+				return (_array[_size - 1]);
+			}
+
+			// Returns pointer to the underlying array serving as element storage.
+			pointer	data(void)
+			{
+				return (_array);
+			}
+
+			// Returns a const_pointer to the underlying array serving as element storage.
+			const_pointer	data(void) const
+			{
+				return (reinterpret_cast<const_pointer>(_array));
+			}
 
 			// ############################ Capacity ############################
 
