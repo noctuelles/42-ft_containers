@@ -42,18 +42,15 @@ int main(void)
 	std_v.push_back(4);
 	std_v.push_back(5);
 
+	v.insert(v.end(), 3, 99);
 
-	cat = v.begin();
-	const_it = cat;
+	v.push_back(299);
+	v.pop_back();
 
-	ft::reverse_iterator<ft::vector<int>::iterator> ri (v.rbegin());
-	ft::reverse_iterator<ft::vector<int>::iterator> ri2 = ri - 2;
-	std::reverse_iterator<std::vector<int>::iterator> std_ri(std_v.rbegin());
-	std::reverse_iterator<std::vector<int>::iterator> std_ri2 = std_ri;
+	for (ft::vector<int>::iterator it = v.begin(); it < v.end(); it++)
+		std::cout << *it << '\n';
 
-	for ( ; ri != v.rend(); ri++)
-		std::cout << *ri << '\n';
-
+	std::cout << '\n';
 	std::cout << "Current allocated size : " << v.capacity() << '\n';
 	std::cout << "Current           size : " << v.size() << '\n';
 

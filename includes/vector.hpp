@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/06 09:27:38 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/06 10:56:30 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -597,6 +597,16 @@ namespace ft
 
 			// ############################ Modifiers ############################
 
+			/* Erases all elements from the container. After this call, size() returns zero.
+			* Invalidates any references, pointers, or iterators referring to contained elements.
+			* Any past-the-end iterators are also invalidated.
+			* Capacity of the vector is unchanged. */
+			void	clear(void)
+			{
+				this->_destructAll();
+				_size = 0;
+			}
+
 			/* Resizes the container to contain count elements.
 			 * If new_size < _size, the container is shrinked, invalidating all iterators past the new size.
 			 * Else, the container may reallocate if new_size > _capacity, and copies of type are appended. */
@@ -619,8 +629,8 @@ namespace ft
 				_size = new_size;
 			}
 
-			// ## Element modifier ##
-
+			/* Add an element at the end of the container.
+			 * Might realloc if the size exceed the capacity. */
 			void	push_back(const value_type& i)
 			{
 				if (_size + 1 > _capacity)
@@ -628,10 +638,11 @@ namespace ft
 				_array[_size++] = i;
 			}
 
-			// undefined behavior : when the container is empty (size == 0).
-			void	pop_back(void)	{ _allocator.destroy(_array[--_size]); }
-
-			void	clear(void)		{ this->_destructAll(); }
+			// Removes the last element of the container.
+			void	pop_back(void)
+			{
+				_allocator.destroy(&_array[--_size]);
+			}
 
 			template <class InputIterator>
 			void	assign(InputIterator first, InputIterator last)
@@ -678,12 +689,14 @@ namespace ft
 				return (first);
 			}
 
-			iterator	insert(iterator pos, size_type count, const T& value)
+			 // Insert count value before pos.
+			void	insert(iterator pos, size_type count, const T& value)
 			{
 				difference_type	distanceFromBeg;
 				iterator		fillStop;
 
-				std::cout << "call to insert\n";
+				if (count == 0)
+					return ;
 				distanceFromBeg = 0;
 				if (_size + count > _capacity)
 				{
@@ -698,25 +711,30 @@ namespace ft
 				for (iterator it = pos; it != fillStop; it++)
 					_allocator.construct(&*it, value);
 				_size += count;
-				return (pos);
 			}
 
-			template< class InputIterator >
-			void	insert(iterator pos, InputIterator first, InputIterator last)
+			// Insert value before pos
+			iterator insert(iterator pos, const T& value)
 			{
-				difference_type	spanDistance;
-				difference_type	distanceFromBeg;
-
-				spanDistance = last - first;
-				distanceFromBeg = 0;
-				if (_size + spanDistance > _capacity)
-				{
-					// If a re-allocation begins, update the iterator so it's referring to the same element.
-					distanceFromBeg = &*pos - &(*this->begin()) ;
-					this->_reAlloc(_size + spanDistance);
-					pos = iterator(&_array[distanceFromBeg]);
-				}
+				return (this->insert(pos, 1, value));
 			}
+
+			/*template< class InputIterator >
+				void	insert(iterator pos, InputIterator first, InputIterator last)
+				{
+					difference_type	spanDistance;
+					difference_type	distanceFromBeg;
+
+					spanDistance = last - first;
+					distanceFromBeg = 0;
+					if (_size + spanDistance > _capacity)
+					{
+						// If a re-allocation begins, update the iterator so it's referring to the same element.
+						distanceFromBeg = &*pos - &(*this->begin()) ;
+						this->_reAlloc(_size + spanDistance);
+						pos = iterator(&_array[distanceFromBeg]);
+					}
+				}*/
 
 			void	swap(vector& x)
 			{
