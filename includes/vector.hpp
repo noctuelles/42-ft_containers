@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/06 09:05:19 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/06 09:27:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,7 +401,7 @@ namespace ft
 
 			/* Copy-assignement constructor
 			 * Because it's a constructor, no need to deallocate. */
-			vector(const vector& other) : _allocator(other._allocator), _size(other._size), _capacity(other._capacity)
+			vector(const vector& other) : _allocator(other._allocator), _size(other._size), _capacity(other._capacity), _array(NULL)
 			{
 				_array = _allocator.allocate(_capacity);
 				for (size_type i = 0; i < _size; i++)
@@ -509,29 +509,27 @@ namespace ft
 			}
 
 			// Same as operator[], but throws an exception if n >= size.
-			reference	at(size_type n)
+			const_reference	at(size_type n)
 			{
 				if (n >= _size)
 					throw (std::out_of_range("vector::at"));
-				return (_array[n]);
+				return (static_cast<const_reference>(_array[n]));
 			}
 
 			// Same as const operator[], but throws an exception if n >= size.
-			const_reference	at(size_type n) const
+			reference	at(size_type n) const
 			{
-				if (n >= _size)
-					throw (std::out_of_range("vector::at"));
-				return (_array[n]);
-			}
-
-			// Returns a reference to the first element of the array.
-			reference		front(void)	
-			{
-				return (_array[0]);
+				return (const_cast<reference>(this->at(n)));
 			}
 
 			// Returns a const_reference to the first element of the array.
 			const_reference	front(void) const
+			{
+				return (_array[0]);
+			}
+
+			// Returns a reference to the first element of the array.
+			reference		front(void)	
 			{
 				return (_array[0]);
 			}
