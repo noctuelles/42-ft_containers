@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/06 08:53:27 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/06 09:05:19 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -399,10 +399,13 @@ namespace ft
 					this->_reAlloc(std::distance(first, last));
 				}
 
-			// Copy-assignement constructor
+			/* Copy-assignement constructor
+			 * Because it's a constructor, no need to deallocate. */
 			vector(const vector& other) : _allocator(other._allocator), _size(other._size), _capacity(other._capacity)
 			{
-				// Perform deep-copy...
+				_array = _allocator.allocate(_capacity);
+				for (size_type i = 0; i < _size; i++)
+					_allocator.construct(&_array[i], other._array[i]);
 			}
 
 			// Destructor
@@ -412,13 +415,23 @@ namespace ft
 				_allocator.deallocate(_array, _capacity);
 			}
 
+			// Copy assignment operator. Replaces the contents with a copy of the contents of rhs.
 			vector&	operator=(const vector& rhs)
 			{
-				// TODO: perform deep-copy.
-				_capacity = rhs._capacity;
-				_size = rhs._size;
-				_allocator = rhs._allocator;
-				_array = rhs._array;
+				if (rhs != *this)
+				{
+					if (_array)
+					{
+						this->_destroyAll();
+						_allocator.deallocate(_array, _capacity);
+					}
+					_allocator = rhs._allocator;
+					_capacity = rhs._capacity;
+					_size = rhs._size;
+					_array = _allocator.allocate(_capacity);
+					for (size_type i = 0; i < _size; i++)
+						_allocator.construct(&_array[i], rhs._array[i]);
+				}
 				return (*this);
 			}
 
