@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/25 14:20:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/05 16:47:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/06 07:29:48 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 namespace ft
 {
 	/* https://en.cppreference.com/w/cpp/iterator/iterator_tags
-	 * Each iterator type must be define to be an alias to one of these tag types.
+	 * Each iterator type must be define to be an alias to one of these tag types below.
 	 * Iterator category tags carry information that can be used to select the most efficient algorithms for
 	 * the specific requirement set that is implied by the category. */
 
@@ -30,7 +30,15 @@ namespace ft
 	struct bidirectional_iterator_tag : public forward_iterator_tag {};
 	struct random_access_iterator_tag : public bidirectional_iterator_tag {};
 
-	//  Base class for iterators.
+	/* iterator is a pointer interface that is used to connect the STL containers
+	 * with the STL algorithms library.
+	 * Different types of iterator exists, such as :
+	 *
+	 *    - input iterator; is read-only and can only be incremented.
+	 *    - output iterator; is write-only and can only be incremented.
+	 *    - forward iterator; inherit from input iterator and output iterator properties (can be read and write, only incrementable).
+	 *    - bidirectional iterator; inherit from forward_iterator properties, plus they can be decremented.
+	 *    - random access iterator; inherit from bidirectional iterator, behave like base pointer type. */
 
 	template <class Category,
 			 class T,
@@ -44,6 +52,26 @@ namespace ft
 			typedef Pointer		pointer;
 			typedef Reference	reference;
 			typedef Category	iterator_category;
+		};
+
+	/* const_iterators offer the same interface as iterator, but you can't modify
+	 * the value of what they point to (they're read-only).
+	 * The pointer is declared as const T*, allowing us to perform pointer arithmetic.
+	 * Note that an iterator can be used to construct or assign a const_iterator but a const_iterator
+	 * cannot be use to construct or assign an iterator. */
+
+	template <class Category,
+			 class T,
+			 class Distance = std::ptrdiff_t,
+			 class Pointer = const T*,
+			 class Reference = const T&>
+		struct const_iterator
+		{
+			typedef const T			value_type;
+			typedef Distance		difference_type;
+			typedef Pointer			pointer;
+			typedef Reference		reference;
+			typedef Category		iterator_category;
 		};
 
 	/* traits allow you to get information about a type during compilation.

@@ -29,9 +29,9 @@ int main(void)
 	ft::vector<int> v;
 	std::vector<int> std_v;
 	std::vector<int>::iterator std_it;
-	std::vector<int>::const_iterator std_c_it;
-	ft::vector<int>::const_iterator c_it;
 	ft::vector<int>::iterator cat;
+	ft::vector<int>::const_iterator const_it;
+
 
 	v.push_back(2);
 	v.push_back(3);
@@ -43,9 +43,9 @@ int main(void)
 	std_v.push_back(4);
 	std_v.push_back(5);
 
-	std_it = std_it + 2;
-	cat += 2;
-	c_it = v.begin();
+
+	cat = v.begin();
+	const_it = cat;
 
 	ft::reverse_iterator<ft::vector<int>::iterator> ri (v.rbegin());
 	ft::reverse_iterator<ft::vector<int>::iterator> ri2 = ri - 2;

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/05 17:20:07 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/06 08:06:43 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,10 +43,7 @@ namespace ft
 
 			typedef std::size_t												size_type;
 
-			/*	default-constructible, copy-constructible, copy-assignable,
-			 *	destructible.
-			 *	random access iterator are behaving like a normal pointer.
-			 */
+			// ############# Iterators implementation #############
 
 			class iterator : public ft::iterator<ft::random_access_iterator_tag, T>
 			{
@@ -57,9 +54,14 @@ namespace ft
 					using typename ft::iterator<ft::random_access_iterator_tag, T>::difference_type;
 
 					iterator() : _ptr(NULL) {};
-					explicit iterator(T *ptr) : _ptr(ptr) {};
-					explicit iterator(const iterator &it) : _ptr(it._ptr) {};
+					iterator(pointer ptr) : _ptr(ptr) {};
+					iterator(const iterator &it) : _ptr(it._ptr) {};
 					~iterator() {};
+
+					pointer base(void)
+					{
+						return (_ptr);
+					}
 
 					iterator& operator=(const iterator& rhs)
 					{
@@ -73,7 +75,7 @@ namespace ft
 						return (*this);
 					}
 
-					iterator&	operator+=(const difference_type& n)
+					iterator&	operator+=(difference_type n)
 					{
 						_ptr += n;
 						return (*this);
@@ -85,7 +87,7 @@ namespace ft
 						return (*this);
 					}
 
-					iterator&	operator-=(const difference_type& n)
+					iterator&	operator-=(difference_type n)
 					{
 						_ptr -= n;
 						return (*this);
@@ -203,19 +205,20 @@ namespace ft
 					}
 
 				private:
-					T*		_ptr;
+					pointer	_ptr;
 			};
 
-			class const_iterator : public ft::iterator<ft::random_access_iterator_tag, T>
+			class const_iterator : public ft::const_iterator<ft::random_access_iterator_tag, T>
 			{
 				public:
 
-					using typename ft::iterator<ft::random_access_iterator_tag, T>::reference;
-					using typename ft::iterator<ft::random_access_iterator_tag, T>::pointer;
-					using typename ft::iterator<ft::random_access_iterator_tag, T>::difference_type;
+					using typename ft::const_iterator<ft::random_access_iterator_tag, T>::reference;
+					using typename ft::const_iterator<ft::random_access_iterator_tag, T>::pointer;
+					using typename ft::const_iterator<ft::random_access_iterator_tag, T>::difference_type;
 
 					const_iterator() : _ptr(NULL) {};
-					const_iterator(T *ptr) : _ptr(ptr) {};
+					const_iterator(T* ptr) : _ptr(ptr) {};
+					const_iterator(pointer ptr) : _ptr(ptr) {};
 					const_iterator(const iterator &it) : _ptr(it._ptr) {};
 					const_iterator(const const_iterator &it) : _ptr(it._ptr) {};
 					~const_iterator() {};
@@ -232,13 +235,13 @@ namespace ft
 						return (*this);
 					}
 
-					const_iterator&	operator+=(const_iterator const& rhs)
+					const_iterator&	operator+=(const const_iterator& rhs)
 					{
 						_ptr += rhs._ptr;
 						return (*this);
 					}
 
-					const_iterator&	operator-=(const_iterator const& rhs)
+					const_iterator&	operator-=(const const_iterator& rhs)
 					{
 						_ptr -= rhs._ptr;
 						return (*this);
@@ -276,7 +279,7 @@ namespace ft
 						return (_ptr >= rhs._ptr);
 					}
 
-					const reference	operator*(void) const
+					reference	operator*(void) const
 					{
 						return (*_ptr);
 					}
@@ -339,10 +342,12 @@ namespace ft
 					{
 						return (const_iterator(_ptr - rhs));
 					}
+
 					const_iterator	operator-(const const_iterator& rhs) const
 					{
 						return (const_iterator(_ptr - rhs._ptr));
 					}
+
 					difference_type	operator-(const const_iterator &rhs)
 					{
 						return (_ptr - rhs._ptr);
@@ -350,16 +355,16 @@ namespace ft
 
 					/* Subscripting Operator */
 
-					reference	operator[](size_t i)
+					const_reference	operator[](size_t i)
 					{
 						return (_ptr[i]);
 					}
 
 				private:
-					T*		_ptr;
+					pointer	_ptr;
 			};
 
-
+			// End of iterators implementation.
 
 			// Default constructor
 			explicit	vector(const allocator_type &alloc = allocator_type())
@@ -390,19 +395,37 @@ namespace ft
 				return (*this);
 			}
 
-			// ## Iterator ##
-
+			// Return an iterator to the first element of the array.
+			// If the containers is empty, begin() == end()
 			iterator	begin(void)
 			{
 				return (iterator(_array));
 			}
 
+			// Return a const_iterator to the first element of the array.
+			const_iterator	begin(void) const
+			{
+				return (const_iterator(_array));
+			}
+
+			// Return an iterator to past the end element of the array.
+			// If the containers is empty, begin() == end()
 			iterator	end(void)
 			{
 				if (!_size)
 					return (begin());
 				else
 					return (iterator(&_array[_size]));
+			}
+
+			// Return a const_iterator to past the end element of the array.
+			// If the containers is empty, begin() == end()
+			const_iterator	end(void) const
+			{
+				if (!_size)
+					return (begin());
+				else
+					return (const_iterator(&_array[_size]));
 			}
 
 			reverse_iterator	rbegin(void)
@@ -434,8 +457,15 @@ namespace ft
 				return (_array[n]);
 			}
 
-			reference		front(void)			{ return (_array[0]); }
-			const reference	front(void) const	{ return (_array[0]); }
+			reference		front(void)	
+			{
+				return (_array[0]);
+			}
+
+			const reference	front(void) const
+			{
+				return (_array[0]);
+			}
 
 			reference		back(void)			{ return (_array[_size - 1]); }
 			const reference	back(void) const	{ return (_array[_size - 1]); }
@@ -443,25 +473,52 @@ namespace ft
 			T*			data(void)			{ return (_array); }
 			const T*	data(void) const	{ return (reinterpret_cast<const T*>(_array)); }
 
-			// ## Capacity ##
+			// ############################ Capacity ############################
 
-			size_type	size(void) const		{ return (_size); }
-			size_type	max_size(void) const	{ return (_allocator.max_size()); }
-			size_type	capacity(void) const	{ return (_capacity); }
-			bool		empty(void) const		{ return (!_size); }
-
-			void		reserve(size_type n)
+			// Returns the current size of the container.
+			size_type	size(void) const
 			{
-				T*	pTemp;
-
-				if (n > max_size())
-					throw (std::length_error("vector::reserve"));
-				if (n > _capacity)
-					this->_reAlloc(n);
+				return (_size);
 			}
 
+			// Returns the maximum number of elements the container is able to hold.
+			size_type	max_size(void) const
+			{
+				return (_allocator.max_size());
+			}
+
+			// Returns the number of elements that the container has currently allocated space for.
+			size_type	capacity(void) const
+			{
+				return (_capacity);
+			}
+
+			// Check if the vector has no elemens, returns true if that's the case.
+			bool	empty(void) const
+			{
+				return (!_size);
+			}
+
+			/* Increase the capacity of the vector if new_cap > _capacity.
+			 * Does not change the size of the vector, only the capacity.
+			 * If reallocation occurs, all iterators are invalidated. */
+			void	reserve(size_type new_cap)
+			{
+				if (new_cap > max_size())
+					throw (std::length_error("vector::reserve"));
+				if (new_cap > _capacity)
+					this->_reAlloc(new_cap);
+			}
+
+			// ############################ Modifiers ############################
+
+			/* Resizes the container to contain count elements.
+			 * If new_size < _size, the container is shrinked, invalidating all iterators past the new size.
+			 * Else, the container may reallocate if new_size > _capacity, and copies of type are appended. */
 			void	resize(size_type new_size, value_type type = value_type())
 			{
+				if (new_size > max_size())
+					throw (std::length_error("vector::resize"));
 				if (new_size < _size)
 				{
 					for (size_type i = new_size; i < _size; i++)
@@ -558,8 +615,6 @@ namespace ft
 				_size += count;
 				return (pos);
 			}
-
-
 
 			template< class InputIterator >
 			void	insert(iterator pos, InputIterator first, InputIterator last)
