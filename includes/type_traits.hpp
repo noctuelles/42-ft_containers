@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/06 15:38:42 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/06 18:31:18 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/07 16:56:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ namespace	ft
 	typedef ft::integral_constant<bool, true>	true_type;
 	typedef ft::integral_constant<bool, false>	false_type;
 
-	template<typename> struct is_integral_base		:	ft::false_type {};
+	template<typename T> struct is_integral_base		:	ft::false_type {};
 
 	template<> struct is_integral_base<bool>		:	ft::true_type {};
 	template<> struct is_integral_base<char>		:	ft::true_type {};
@@ -74,8 +74,6 @@ namespace	ft
 	template<> struct is_integral_base<long long>	:	ft::true_type {};
 
 	template<> struct is_integral_base<unsigned char>		:	ft::true_type {};
-	template<> struct is_integral_base<unsigned short>		:	ft::true_type {};
-	template<> struct is_integral_base<unsigned int>		:	ft::true_type {};
 	template<> struct is_integral_base<unsigned long>		:	ft::true_type {};
 	template<> struct is_integral_base<unsigned long long>	:	ft::true_type {};
 

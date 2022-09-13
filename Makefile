@@ -6,7 +6,7 @@
 #    By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/08/21 12:26:43 by plouvel           #+#    #+#              #
-#    Updated: 2022/08/27 16:00:25 by plouvel          ###   ########.fr        #
+#    Updated: 2022/09/13 17:14:11 by plouvel          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ SRCS_DIR	=	srcs
 
 OBJS_DIR	=	objs
 
-CFLAGS		=	-Wall -Werror -Wextra -std=c++98 -MD -g3
+CFLAGS		=	-Wall -Werror -Wextra -std=c++98 -MD -g3 -fsanitize=address
 
 CINCS		=	-I includes
 
@@ -31,7 +31,7 @@ NAME		=	ft_containers
 RM			=	rm -rf
 
 $(NAME):	$(OBJS) Makefile
-	$(CC) $(OBJS) -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
 $(OBJS_DIR)/%.o:	$(SRCS_DIR)/%.cpp | $(OBJS_DIR)
 	$(CC) $(CFLAGS) $(CINCS) -c $< -o $@

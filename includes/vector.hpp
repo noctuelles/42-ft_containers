@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/06 15:49:48 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/13 20:06:35 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,13 @@
 #include "iterators.hpp"
 #include <cstddef>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <stdexcept>
 #include <cstring>
 #include <cstdlib>
 #include <algorithm>
+#include "type_traits.hpp"
 
 /*	TODO:
  * Modifiers ;
@@ -54,13 +56,13 @@ namespace ft
 
 			// ############# Iterators implementation #############
 
-			class iterator : public ft::iterator<ft::random_access_iterator_tag, T>
+			class iterator : public ft::iterator<std::random_access_iterator_tag, T>
 			{
 				public:
 
-					using typename ft::iterator<ft::random_access_iterator_tag, T>::reference;
-					using typename ft::iterator<ft::random_access_iterator_tag, T>::pointer;
-					using typename ft::iterator<ft::random_access_iterator_tag, T>::difference_type;
+					using typename ft::iterator<std::random_access_iterator_tag, T>::reference;
+					using typename ft::iterator<std::random_access_iterator_tag, T>::pointer;
+					using typename ft::iterator<std::random_access_iterator_tag, T>::difference_type;
 
 					iterator() : _ptr(NULL) {};
 					iterator(pointer ptr) : _ptr(ptr) {};
@@ -217,13 +219,13 @@ namespace ft
 					pointer	_ptr;
 			};
 
-			class const_iterator : public ft::const_iterator<ft::random_access_iterator_tag, T>
+			class const_iterator : public ft::const_iterator<std::random_access_iterator_tag, T>
 			{
 				public:
 
-					using typename ft::const_iterator<ft::random_access_iterator_tag, T>::reference;
-					using typename ft::const_iterator<ft::random_access_iterator_tag, T>::pointer;
-					using typename ft::const_iterator<ft::random_access_iterator_tag, T>::difference_type;
+					using typename ft::const_iterator<std::random_access_iterator_tag, T>::reference;
+					using typename ft::const_iterator<std::random_access_iterator_tag, T>::pointer;
+					using typename ft::const_iterator<std::random_access_iterator_tag, T>::difference_type;
 
 					const_iterator() : _ptr(NULL) {};
 					const_iterator(T* ptr) : _ptr(ptr) {};
@@ -405,7 +407,7 @@ namespace ft
 			{
 				_array = _allocator.allocate(_capacity);
 				for (size_type i = 0; i < _size; i++)
-					_allocator.construct(&_array[i], other._array[i]);
+					_allocator.construct(_array + i, *(other._array + i));
 			}
 
 			// Destructor
@@ -430,7 +432,7 @@ namespace ft
 					_size = rhs._size;
 					_array = _allocator.allocate(_capacity);
 					for (size_type i = 0; i < _size; i++)
-						_allocator.construct(&_array[i], rhs._array[i]);
+						_allocator.construct(_array + i, *(rhs._array + i));
 				}
 				return (*this);
 			}
@@ -457,7 +459,7 @@ namespace ft
 				if (!_size)
 					return (begin());
 				else
-					return (iterator(&_array[_size]));
+					return (iterator(_array + _size));
 			}
 
 			// Return a const_iterator to past the end element of the array.
@@ -467,7 +469,7 @@ namespace ft
 				if (!_size)
 					return (begin());
 				else
-					return (const_iterator(&_array[_size]));
+					return (const_iterator(_array + _size));
 			}
 
 			/* Returns a reverse_iterator to past the end element of the array. */
@@ -617,14 +619,14 @@ namespace ft
 				if (new_size < _size)
 				{
 					for (size_type i = new_size; i < _size; i++)
-						_allocator.destroy(&_array[i]);
+						_allocator.destroy(_array + i);
 				}
 				else
 				{
 					if (new_size > _capacity)
 						this->_reAlloc(new_size);
 					for (size_type i = _size; i < new_size; i++)
-						_allocator.construct(&_array[i], type);
+						_allocator.construct(_array + i, type);
 				}
 				_size = new_size;
 			}
@@ -634,14 +636,17 @@ namespace ft
 			void	push_back(const value_type& i)
 			{
 				if (_size + 1 > _capacity)
+				{
+					std::cout << "Reallocating\n";
 					this->_reAlloc(_size + 1);
-				_array[_size++] = i;
+				}
+				_allocator.construct(_array + _size++, i);
 			}
 
 			// Removes the last element of the container.
 			void	pop_back(void)
 			{
-				_allocator.destroy(&_array[--_size]);
+				_allocator.destroy(_array + --_size);
 			}
 
 			template <class InputIterator>
@@ -664,26 +669,25 @@ namespace ft
 			// Find the address of the element to be erased.
 			// Move the element past the
 
+			// iterator is a random-access iterator
 			iterator	erase(iterator position)
 			{
-				_allocator.destroy(&(*position));
-				if (position != this->end())
-				{
-					std::copy(position + 1, this->end(), position);
-					_size--;
-				}
-				return (position);
+				return (erase(position, position + 1));
 			}
 
+			void	destroyer(iterator it)
+			{
+				_allocator.destroy(it.base());
+			}
+
+			// first and last are random-access iterator. So the pointer arithmetic used here is legal.
 			iterator	erase(iterator first, iterator last)
 			{
 				difference_type	spanDistance;
 
-				spanDistance = last - first;
-				for (iterator it = first; it != last; it++)
-					_allocator.destroy(&*it);
-				if (last != this->end())
-					std::copy(last, this->end(), first);
+				spanDistance = std::distance(first, last);
+				for (iterator it = std::copy(first + spanDistance, this->end(), first); it != this->end(); it++)
+					_allocator.destroy(it.base());
 				_size -= spanDistance;
 
 				return (first);
@@ -706,7 +710,7 @@ namespace ft
 					pos = iterator(&_array[distanceFromBeg]);
 				}
 				if (pos != this->end())
-					std::copy_backward(pos, this->end(), this->end() + count);
+					std::copy_backward(pos, this->end(), this->end() + count); // Utiliser un constructor
 				fillStop = iterator(pos + count);
 				for (iterator it = pos; it != fillStop; it++)
 					_allocator.construct(&*it, value);
@@ -719,9 +723,32 @@ namespace ft
 				return (this->insert(pos, 1, value));
 			}
 
-			/*template< class InputIterator >
-				void	insert(iterator pos, InputIterator first, InputIterator last)
+			template< class InputIterator >
+				typename ft::enable_if<!ft::is_integral<InputIterator>::value, void>::type
+				insert(iterator pos, InputIterator first, InputIterator last)
 				{
+					difference_type	distanceFromBeg;
+					difference_type	distance;
+
+					if (last < first)
+						throw (std::length_error("vector::insert, range overload"));
+					distance = last - first;
+					if (distance)
+					{
+						if (_size + distance > _capacity)
+						{
+							distanceFromBeg = &*pos - &(*this->begin());
+							this->_reAlloc(_size + distance);
+							pos = iterator(&_array[distanceFromBeg]);
+						}
+						if (pos != this->end())
+							std::copy_backward(pos, this->end(), this->end() + distance);
+						std::cout << "\tvalue of first : " << *first << '\n';
+						std::cout << "\tvalue of last : " << *last << '\n';
+						std::copy_backward(first, last, pos + distance);
+						_size += distance;
+					}
+					/*
 					difference_type	spanDistance;
 					difference_type	distanceFromBeg;
 
@@ -733,8 +760,8 @@ namespace ft
 						distanceFromBeg = &*pos - &(*this->begin()) ;
 						this->_reAlloc(_size + spanDistance);
 						pos = iterator(&_array[distanceFromBeg]);
-					}
-				}*/
+					}*/
+				}
 
 			void	swap(vector& x)
 			{
@@ -787,8 +814,8 @@ namespace ft
 				pTemp = _allocator.allocate(reAllocSize);
 				for (size_type i = 0; i < _size; i++)
 				{
-					_allocator.construct(&pTemp[i], _array[i]);
-					_allocator.destroy(&_array[i]);
+					_allocator.construct(pTemp + i, *(_array + i));
+					_allocator.destroy(_array + i);
 				}
 				if (_array)
 					_allocator.deallocate(_array, _capacity);
@@ -804,7 +831,7 @@ namespace ft
 				reAllocSize = this->_getReAllocSize(n);
 				pTemp = _allocator.allocate(reAllocSize);
 				for (size_type i = 0; i < _size; i++)
-					_allocator.destroy(&_array[i]);
+					_allocator.destroy(_array + i);
 				if (_array)
 					_allocator.deallocate(_array, _capacity);
 				_capacity = reAllocSize;
@@ -814,9 +841,10 @@ namespace ft
 			void	_destroyAll(void)
 			{
 				for (size_type i = 0; i < _size; i++)
-					_allocator.destroy(&_array[i]);
+					_allocator.destroy(_array + i);
 				_size = 0;
 			}
+
 	};
 }
 
