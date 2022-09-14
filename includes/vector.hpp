@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/13 20:06:35 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/14 18:49:24 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,14 @@
 #include <cstddef>
 #include <iostream>
 #include <iterator>
+#include <list>
 #include <memory>
+#include <new>
 #include <stdexcept>
 #include <cstring>
 #include <cstdlib>
 #include <algorithm>
+#include "Dummy.hpp"
 #include "type_traits.hpp"
 
 /*	TODO:
@@ -378,36 +381,38 @@ namespace ft
 			// ############################ Constructors and destructor ############################
 
 			// Default constructor. Constructs an empty container with a default-constructed allocator.
-			vector(void) : _allocator(allocator_type()), _size(0), _capacity(0), _array(NULL) {};
+			vector() : _allocator(allocator_type()), _size(), _capacity(), _array() {};
 
 			// Constructs an empty container with the given allocator alloc.
 			explicit vector(const allocator_type &alloc)
-				: _allocator(alloc), _size(0), _capacity(0), _array(NULL) {}
+				: _allocator(alloc), _size(), _capacity(), _array() {}
 
 
-			// Constructs the container with count copies of elements with value val.
+			/* Constructs the container with count copies of elements with value val.
+			 * The container is calling assign() behind the scene. */
 			explicit vector(size_type n, const value_type &val = value_type(),
 					const allocator_type &alloc = allocator_type())
-				: _allocator(alloc), _size(n), _capacity(n), _array(NULL)
+				: _allocator(alloc), _size(), _capacity(), _array()
 			{
-				this->resize(n, val);
+				this->assign(n, val);
 			}
 
-			// Constructs the container with the contents of the range [first, last).
+			/* Constructs the container with the contents of the range [first, last).
+			 * The container is calling assign() behind the scene. */
 			template <class InputIt>
-				vector(InputIt first, InputIt last, const allocator_type& alloc = allocator_type())
-				: _allocator(alloc), _size(0), _capacity(0), _array(NULL)
+				vector(InputIt first, InputIt last, const allocator_type& alloc = allocator_type(), typename ft::enable_if<!ft::is_integral<InputIt>::value>::type* = 0)
+				: _allocator(alloc), _size(), _capacity(), _array()
 				{
-					this->_reAlloc(std::distance(first, last));
+					this->assign(first, last);
 				}
 
-			/* Copy-assignement constructor
+			/* Copy constructor
 			 * Because it's a constructor, no need to deallocate. */
-			vector(const vector& other) : _allocator(other._allocator), _size(other._size), _capacity(other._capacity), _array(NULL)
+			vector(const vector& other) : _allocator(other._allocator), _size(other._size), _capacity(_size), _array()
 			{
-				_array = _allocator.allocate(_capacity);
+				_array = _allocator.allocate(_size);
 				for (size_type i = 0; i < _size; i++)
-					_allocator.construct(_array + i, *(other._array + i));
+					_allocator.construct(_array + i, other._array[i]);
 			}
 
 			// Destructor
@@ -420,19 +425,24 @@ namespace ft
 			// Copy assignment operator. Replaces the contents with a copy of the contents of rhs.
 			vector&	operator=(const vector& rhs)
 			{
-				if (rhs != *this)
+				T*	pTmpArray;
+
+				/* Allocating memory before deallocating the current array ; if _allocator.allocate throws an exception,
+				 * the current instance is left untouched so it can be destroyed without any incident (double free, etc...). */
+				if (this != &rhs)
 				{
+					pTmpArray = _allocator.allocate(rhs._size);
 					if (_array)
 					{
 						this->_destroyAll();
 						_allocator.deallocate(_array, _capacity);
 					}
-					_allocator = rhs._allocator;
-					_capacity = rhs._capacity;
 					_size = rhs._size;
-					_array = _allocator.allocate(_capacity);
+					_capacity = _size;
+					_allocator = rhs._allocator;
+					_array = pTmpArray;
 					for (size_type i = 0; i < _size; i++)
-						_allocator.construct(_array + i, *(rhs._array + i));
+						_allocator.construct(_array + i, rhs._array[i]);
 				}
 				return (*this);
 			}
@@ -624,7 +634,7 @@ namespace ft
 				else
 				{
 					if (new_size > _capacity)
-						this->_reAlloc(new_size);
+						this->reserve(new_size);
 					for (size_type i = _size; i < new_size; i++)
 						_allocator.construct(_array + i, type);
 				}
@@ -636,10 +646,7 @@ namespace ft
 			void	push_back(const value_type& i)
 			{
 				if (_size + 1 > _capacity)
-				{
-					std::cout << "Reallocating\n";
-					this->_reAlloc(_size + 1);
-				}
+					this->reserve(_size + 1);
 				_allocator.construct(_array + _size++, i);
 			}
 
@@ -649,72 +656,93 @@ namespace ft
 				_allocator.destroy(_array + --_size);
 			}
 
+			// Replaces the contents with copies of those in the range [first, last).
 			template <class InputIterator>
-			void	assign(InputIterator first, InputIterator last)
-			{
-				difference_type	size;
+				typename ft::enable_if<!ft::is_integral<InputIterator>::value, void>::type
+				assign(InputIterator first, InputIterator last)
+				{
+					difference_type	n;
 
-				size = last - first;
-			}
+					n = std::distance(first, last);
+					if (n <= 0)
+						return ;
+					if (static_cast<size_t>(n) > _capacity)
+					{
+						this->_reAllocNoCopy(n);
+						for (size_type i = 0; first != last; first++, i++)
+							_allocator.construct(_array + i, *first);
+					}
+					else
+					{
+						std::copy(first, last, _array);
+						for (size_type i = n; i < _size; i++)
+							_allocator.destroy(_array + i);
+					}
+					_size = n;
+				}
 
+			// Replaces the contents with n copies of value val.
 			void	assign(size_type n, const value_type& val)
 			{
 				if (n > _capacity)
-					this->_reAlloc_noSave(n);
+				{
+					this->_reAllocNoCopy(n);
+					for (size_type i = 0; i < n; i++)
+						_allocator.construct(_array + i, val);
+				}
+				else
+				{
+					std::fill_n(_array, n, val);
+					for (size_type i = n; i < _size; i++)
+						_allocator.destroy(_array + i);
+				}
 				_size = n;
-				for (iterator it = this->begin(); it != this->end(); it++)
-					*it = val;
 			}
 
-			// Find the address of the element to be erased.
-			// Move the element past the
-
-			// iterator is a random-access iterator
+			// Remove the element at position.
+			// Invalidates all iterators at or past the point of erase.
+			// Return an iterator following the last element removed.
 			iterator	erase(iterator position)
 			{
 				return (erase(position, position + 1));
 			}
 
-			void	destroyer(iterator it)
-			{
-				_allocator.destroy(it.base());
-			}
-
-			// first and last are random-access iterator. So the pointer arithmetic used here is legal.
+			// Removes the elements in the range [first, last).
+			// Invalidates all iterators at or past the point of erase.
+			// Return an iterator following the last element removed.
 			iterator	erase(iterator first, iterator last)
 			{
-				difference_type	spanDistance;
+				difference_type	iteratorDistance;
 
-				spanDistance = std::distance(first, last);
-				for (iterator it = std::copy(first + spanDistance, this->end(), first); it != this->end(); it++)
+				if (first >= this->end() || last > this->end())
+					throw(std::range_error("vector::erase"));
+				iteratorDistance = std::distance(first, last);
+				if (iteratorDistance <= 0)
+					return (last);
+				for (iterator it = std::copy(first + iteratorDistance, this->end(), first); it != this->end(); it++)
 					_allocator.destroy(it.base());
-				_size -= spanDistance;
-
+				_size -= iteratorDistance;
 				return (first);
 			}
 
 			 // Insert count value before pos.
 			void	insert(iterator pos, size_type count, const T& value)
 			{
-				difference_type	distanceFromBeg;
+				difference_type	iteratorDistance;
 				iterator		fillStop;
 
 				if (count == 0)
 					return ;
-				distanceFromBeg = 0;
+				iteratorDistance = 0;
 				if (_size + count > _capacity)
 				{
-					// If a re-allocation begins, update the iterator so it's referring to the same element.
-					distanceFromBeg = &*pos - &(*this->begin()) ;
+					iteratorDistance = std::distance(this->begin(), pos);
 					this->_reAlloc(_size + count);
-					pos = iterator(&_array[distanceFromBeg]);
+					pos = iterator(_array + iteratorDistance);
 				}
-				if (pos != this->end())
-					std::copy_backward(pos, this->end(), this->end() + count); // Utiliser un constructor
-				fillStop = iterator(pos + count);
-				for (iterator it = pos; it != fillStop; it++)
-					_allocator.construct(&*it, value);
+				// Premiere=
 				_size += count;
+				(void) value;
 			}
 
 			// Insert value before pos
@@ -763,6 +791,8 @@ namespace ft
 					}*/
 				}
 
+			// Exchanges the contents of the container with those of x.
+			// There's no move, copy operation on individual elements.
 			void	swap(vector& x)
 			{
 				allocator_type	allocator  = _allocator;
@@ -774,7 +804,6 @@ namespace ft
 				_size = x._size;
 				_capacity = x._capacity;
 				_array = x._array;
-
 				x._allocator = allocator;
 				x._size = size;
 				x._capacity = capacity;
@@ -788,15 +817,15 @@ namespace ft
 				return (_allocator);
 			}
 
-
-
 		private:
+			// Private attributes
 			allocator_type	_allocator;
 			size_type		_size;
 			size_type		_capacity;
 
 			T*				_array;
 
+			// Private functions
 			size_type	_getReAllocSize(size_type n)
 			{
 				if (_capacity * 2 >= n)
@@ -813,17 +842,44 @@ namespace ft
 				reAllocSize = this->_getReAllocSize(n);
 				pTemp = _allocator.allocate(reAllocSize);
 				for (size_type i = 0; i < _size; i++)
-				{
 					_allocator.construct(pTemp + i, *(_array + i));
+				// The array is destructed after construction of the new array if a constructor throws an exception.
+				for (size_type i = 0; i < _size; i++)
 					_allocator.destroy(_array + i);
-				}
 				if (_array)
 					_allocator.deallocate(_array, _capacity);
 				_capacity = reAllocSize;
 				_array = pTemp;
 			}
 
-			void	_reAlloc_noSave(size_type n)
+			void	_reAllocCustom(iterator pos, size_type n, size_type count, const T& val)
+			{
+				T*			pTemp;
+				size_type	reAllocSize;
+				iterator	it;
+				size_type	i;
+
+				reAllocSize = this->_getReAllocSize(n);
+				pTemp = _allocator.allocate(reAllocSize);
+				for (it = this->begin(), i = 0; it != pos; it++, i++)
+				{
+					_allocator.construct(pTemp + i, *it.base());
+				}
+				for (; count; count--, i++)
+					_allocator.construct(pTemp + i, val);
+				for (++it; it != this->end(); it++, i++)
+					_allocator.construct(pTemp + i, *it.base());
+
+				// The array is destructed after construction of the new array if a constructor throws an exception.
+				for (size_type i = 0; i < _size; i++)
+					_allocator.destroy(_array + i);
+				if (_array)
+					_allocator.deallocate(_array, _capacity);
+				_capacity = reAllocSize;
+				_array = pTemp;
+			}
+
+			void	_reAllocNoCopy(size_type n)
 			{
 				T*			pTemp;
 				size_type	reAllocSize;

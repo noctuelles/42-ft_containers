@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/25 14:20:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/13 20:06:39 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/14 18:49:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 // std::ptrdiff_t is a type that can hold any result of pointer arithmetic operation.
 
+# include <iterator>
 # include <cstddef>
 
 namespace ft
@@ -100,7 +101,7 @@ namespace ft
 			typedef T*								pointer;
 			typedef T&								reference;
 			typedef std::ptrdiff_t					difference_type;
-			typedef ft::random_access_iterator_tag	iterator_category;
+			typedef std::random_access_iterator_tag	iterator_category;
 		};
 
 	template <class T>
@@ -110,7 +111,7 @@ namespace ft
 			typedef const T*						pointer;
 			typedef const T&						reference;
 			typedef std::ptrdiff_t					difference_type;
-			typedef ft::random_access_iterator_tag	iterator_category;
+			typedef std::random_access_iterator_tag	iterator_category;
 		};
 
 	/* reverse_iterator implementation. */
