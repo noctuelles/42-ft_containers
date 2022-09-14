@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/14 18:49:24 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/14 19:24:44 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -730,7 +730,9 @@ namespace ft
 			{
 				difference_type	iteratorDistance;
 				iterator		fillStop;
+				size_type		tmpCount = count;
 
+				std::cout << "insert(iterator pos, size_type count, const T& value) called\n";
 				if (count == 0)
 					return ;
 				iteratorDistance = 0;
@@ -740,9 +742,13 @@ namespace ft
 					this->_reAlloc(_size + count);
 					pos = iterator(_array + iteratorDistance);
 				}
-				// Premiere=
-				_size += count;
-				(void) value;
+				for (iterator it = pos; it != this->end(); it++)
+					_allocator.construct((it + count).base(), *it.base());
+				for (iterator it = pos; it != this->end(); it++, count--)
+					*it = value;
+				for (iterator it = this->end(); count != 0 ; it++, count--)
+					_allocator.construct(it.base(), value);
+				_size += tmpCount;
 			}
 
 			// Insert value before pos

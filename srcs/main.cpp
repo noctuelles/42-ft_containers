@@ -32,7 +32,7 @@ bool	vectorTest_Constructors()
 
 int main(void)
 {
-	/*{
+	{
 		ft::vector<Dummy> dummyVector;
 		ft::vector<Dummy> anotherDummyVector;
 
@@ -42,7 +42,7 @@ int main(void)
 		dummyVector = anotherDummyVector;
 
 		std::cout << "INSERTING ELEMENTS\n";
-		dummyVector.insert(dummyVector.begin() + 1, 3, Dummy("Intru!"));
+		dummyVector.insert(dummyVector.begin(), 40, Dummy("Intru!"));
 
 		std::cout << "Final size : " << dummyVector.size() << '\n';
 		std::cout << "Final capacity : " << dummyVector.capacity() << '\n';
@@ -51,9 +51,9 @@ int main(void)
 		{
 			std::cout << *it;
 		}
-	}*/
+	}
 	std::cout << "\n\n";
-	{
+	/*{
 		std::vector<Dummy> dummyVector;
 		std::vector<Dummy> anotherDummyVector;
 
@@ -73,7 +73,7 @@ int main(void)
 		{
 			std::cout << *it;
 		}
-	}
+	}*/
 
 	return (EXIT_SUCCESS);
 }
