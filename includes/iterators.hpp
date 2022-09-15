@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/25 14:20:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/14 18:49:25 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/15 11:29:10 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,14 @@ namespace ft
 	/* https://en.cppreference.com/w/cpp/iterator/iterator_tags
 	 * Each iterator type must be define to be an alias to one of these tag types below.
 	 * Iterator category tags carry information that can be used to select the most efficient algorithms for
-	 * the specific requirement set that is implied by the category. */
+	 * the specific requirement set that is implied by the category.
+	 * Notes that for ft_container, it is not mandatory to define them. */
 
-	struct input_iterator_tag {};
+	/* struct input_iterator_tag {};
 	struct output_iterator_tag {};
 	struct forward_iterator_tag : public input_iterator_tag {};
 	struct bidirectional_iterator_tag : public forward_iterator_tag {};
-	struct random_access_iterator_tag : public bidirectional_iterator_tag {};
+	struct random_access_iterator_tag : public bidirectional_iterator_tag {}; */
 
 	/* iterator is a pointer interface that is used to connect the STL containers
 	 * with the STL algorithms library.
@@ -283,9 +284,6 @@ namespace ft
 		{
 			return (lhs.base() - rhs.base());
 		}
-
-	/* Iterator tags :
-	 * They're empty types, used to distinguish different iterators. */
 
 }
 

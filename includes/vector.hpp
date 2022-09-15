@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/14 19:24:44 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/15 16:46:36 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include <new>
 #include <stdexcept>
 #include <cstring>
+#include <typeinfo>
 #include <cstdlib>
 #include <algorithm>
 #include "Dummy.hpp"
@@ -725,76 +726,56 @@ namespace ft
 				return (first);
 			}
 
-			 // Insert count value before pos.
 			void	insert(iterator pos, size_type count, const T& value)
 			{
-				difference_type	iteratorDistance;
-				iterator		fillStop;
-				size_type		tmpCount = count;
-
-				std::cout << "insert(iterator pos, size_type count, const T& value) called\n";
-				if (count == 0)
-					return ;
-				iteratorDistance = 0;
-				if (_size + count > _capacity)
-				{
-					iteratorDistance = std::distance(this->begin(), pos);
-					this->_reAlloc(_size + count);
-					pos = iterator(_array + iteratorDistance);
-				}
-				for (iterator it = pos; it != this->end(); it++)
-					_allocator.construct((it + count).base(), *it.base());
-				for (iterator it = pos; it != this->end(); it++, count--)
-					*it = value;
-				for (iterator it = this->end(); count != 0 ; it++, count--)
-					_allocator.construct(it.base(), value);
-				_size += tmpCount;
+				this->_insert(pos, count, value);
 			}
 
 			// Insert value before pos
 			iterator insert(iterator pos, const T& value)
 			{
-				return (this->insert(pos, 1, value));
+				return (this->_insert(pos, 1, value));
 			}
 
-			template< class InputIterator >
+			template <class RandomAccessIterator>
+				void _insert(iterator pos, RandomAccessIterator first, RandomAccessIterator last, std::random_access_iterator_tag)
+				{
+					bool	isRangeInCurrentVector;
+					difference_type	firstDistance,
+									lastDistance,
+									count;
+
+					isRangeInCurrentVector = false;
+					count = std::distance(first, last);
+					if (first.base() >= this->begin().base())
+					{
+						firstDistance = std::distance(this->begin(), first);
+						lastDistance = std::distance(this->begin(), last);
+						isRangeInCurrentVector = true;
+					}
+					if (count)
+					{
+						if (_size + count > _capacity)
+						{
+							this->_reAlloc(_size + count);
+							if (isRangeInCurrentVector)
+							{
+								first = iterator(_array + firstDistance);
+								last = iterator(_array + lastDistance);
+							}
+						}
+						for (iterator it = this->end(); it != this->end() + count; it++)
+						{
+							_allocator.construct(
+						}
+					}
+				}
+
+			template <class InputIterator>
 				typename ft::enable_if<!ft::is_integral<InputIterator>::value, void>::type
 				insert(iterator pos, InputIterator first, InputIterator last)
 				{
-					difference_type	distanceFromBeg;
-					difference_type	distance;
-
-					if (last < first)
-						throw (std::length_error("vector::insert, range overload"));
-					distance = last - first;
-					if (distance)
-					{
-						if (_size + distance > _capacity)
-						{
-							distanceFromBeg = &*pos - &(*this->begin());
-							this->_reAlloc(_size + distance);
-							pos = iterator(&_array[distanceFromBeg]);
-						}
-						if (pos != this->end())
-							std::copy_backward(pos, this->end(), this->end() + distance);
-						std::cout << "\tvalue of first : " << *first << '\n';
-						std::cout << "\tvalue of last : " << *last << '\n';
-						std::copy_backward(first, last, pos + distance);
-						_size += distance;
-					}
-					/*
-					difference_type	spanDistance;
-					difference_type	distanceFromBeg;
-
-					spanDistance = last - first;
-					distanceFromBeg = 0;
-					if (_size + spanDistance > _capacity)
-					{
-						// If a re-allocation begins, update the iterator so it's referring to the same element.
-						distanceFromBeg = &*pos - &(*this->begin()) ;
-						this->_reAlloc(_size + spanDistance);
-						pos = iterator(&_array[distanceFromBeg]);
-					}*/
+					this->_insert(pos, first, last, typename ft::iterator_traits<InputIterator>::iterator_category());
 				}
 
 			// Exchanges the contents of the container with those of x.
@@ -831,6 +812,33 @@ namespace ft
 
 			T*				_array;
 
+			 // Insert count value before pos.
+			 // Can be even more optimized.
+			iterator	_insert(iterator pos, size_type count, const T& value)
+			{
+				difference_type	iteratorDistance;
+				size_type		tmpCount = count;
+				iterator		it;
+
+				if (count == 0)
+					return (pos);
+				if (_size + count > _capacity)
+				{
+					iteratorDistance = std::distance(this->begin(), pos);
+					this->_reAlloc(_size + count);
+					pos = iterator(_array + iteratorDistance);
+				}
+				for (it = pos; it != this->end(); it++, count--)
+				{
+					_allocator.construct((it + tmpCount).base(), *it);
+					*it = value;
+				}
+				for (; count != 0 ; it++, count--)
+					_allocator.construct(it.base(), value);
+				_size += tmpCount;
+				return (pos);
+			}
+
 			// Private functions
 			size_type	_getReAllocSize(size_type n)
 			{
@@ -846,10 +854,29 @@ namespace ft
 				size_type	reAllocSize;
 
 				reAllocSize = this->_getReAllocSize(n);
+
+				/* Allocating the new array in a temporary pointer.
+				 * Note that we allocate before destroying the old array to be exception-safe.
+				 * Indeed, if allocating fails for some reason and throw an exception, the current instance
+				 * should left untouched. */
+
 				pTemp = _allocator.allocate(reAllocSize);
 				for (size_type i = 0; i < _size; i++)
-					_allocator.construct(pTemp + i, *(_array + i));
-				// The array is destructed after construction of the new array if a constructor throws an exception.
+				{
+					/* Catching every exception that a copy constructor can throw.
+					 * To avoir memory leaks in such case, each object constructed before the throw is destroyed
+					 * and the memory is deallocated.
+					 * The exception is then re-throw higher in the call stack. */
+
+					try { _allocator.construct(pTemp + i, *(_array + i)); }
+					catch (...)
+					{
+						for (size_type j = 0; j < i; j++)
+							_allocator.destroy(pTemp + j);
+						_allocator.deallocate(pTemp, reAllocSize);
+						throw;
+					}
+				}
 				for (size_type i = 0; i < _size; i++)
 					_allocator.destroy(_array + i);
 				if (_array)
