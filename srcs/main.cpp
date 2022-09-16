@@ -29,10 +29,10 @@ bool	vectorTest_Constructors()
 	return (true);
 }
 
-/*static inline size_t	getMillisecDifference(const struct timeval& begin, const struct timeval& end)
+static inline size_t	getMillisecDifference(const struct timeval& begin, const struct timeval& end)
 {
 	return ((end.tv_sec * 1000 + end.tv_usec / 1000) - (begin.tv_sec * 1000 + begin.tv_usec / 1000));
-}*/
+}
 
 template <class T>
 void	print(const T& arg)
@@ -40,52 +40,63 @@ void	print(const T& arg)
 	std::cout << arg;
 }
 
-/*void	insertTest()
+void	insertTest()
 {
 	struct timeval	begin, end;
 
 	{
 		ft::vector<Dummy>	dummyVector;
+		ft::vector<ft::vector<Dummy> > lol;
+
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+
+		lol.push_back(dummyVector);
 
 		gettimeofday(&begin, NULL);
-		dummyVector.insert(dummyVector.begin(), 4);
+		lol.insert(lol.begin(), 1999999, dummyVector);
 		gettimeofday(&end, NULL);
 
-		//std::cout << "Your vector took " << getMillisecDifference(begin, end) << '\n';
-		std::for_each(dummyVector.begin(), dummyVector.end(), print<Dummy>);
+		std::cout << "Your vector took " << getMillisecDifference(begin, end) << '\n';
+		//std::for_each(dummyVector.begin(), dummyVector.end(), print<Dummy>);
 	}
 
 	{
-		std::vector<Dummy>	dummyVector;
+		namespace ft = std;
 
-		gettimeofday(&begin, NULL);
-		dummyVector.insert(dummyVector.begin(), Dummy("Test"));
-		gettimeofday(&end, NULL);
-		//std::cout << "Standard vector took " << getMillisecDifference(begin, end) << '\n';
-		std::for_each(dummyVector.begin(), dummyVector.end(), print<Dummy>);
-	}
-
-	{
 		ft::vector<Dummy>	dummyVector;
-		ft::vector<Dummy>	anotherDummyVector;
+		ft::vector<ft::vector<Dummy> > lol;
 
-		dummyVector.push_back(Dummy("Bonjour1"));
-		dummyVector.push_back(Dummy("Bonjour2"));
-		dummyVector.push_back(Dummy("Bonjour3"));
-		dummyVector.push_back(Dummy("Bonjour4"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
+		dummyVector.push_back(Dummy("Bonjourss"));
 
-		anotherDummyVector.push_back(Dummy("Bonjour2"));
-		anotherDummyVector.push_back(Dummy("Bonjour2"));
+		lol.push_back(dummyVector);
 
-		dummyVector.insert(dummyVector.begin() + 2, anotherDummyVector.begin() + 1, anotherDummyVector.end());
-		std::for_each(dummyVector.begin(), dummyVector.end(), print<Dummy>);
+		gettimeofday(&begin, NULL);
+		lol.insert(lol.begin(), 1999999, dummyVector);
+		gettimeofday(&end, NULL);
+
+		std::cout << "Standard vector took " << getMillisecDifference(begin, end) << '\n';
+		//std::for_each(dummyVector.begin(), dummyVector.end(), print<Dummy>);
 	}
-}*/
+}
 
 int Dummy::count = 0;
 
 int main(void)
 {
+	insertTest();
+	/*
 	{
 		ft::vector<int> dummyVector;
 
@@ -115,7 +126,7 @@ int main(void)
 			std::cout << *it << '\n';
 		}
 	}
-	std::cout << "\n\n";
+	std::cout << "\n\n";*/
 	/*{
 		std::vector<Dummy> dummyVector;
 		dummyVector.push_back(Dummy("Bonjour1"));

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/16 15:08:44 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/16 15:55:35 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -387,7 +387,6 @@ namespace ft
 				// Default constructor. Constructs an empty container with a default-constructed allocator.
 				vector() :  _allocator(), _size(), _capacity(), _array() {}
 
-
 				/* Constructs the container with count copies of elements with value val.
 				 * The container is calling assign() behind the scene. */
 				explicit vector(size_type n, const value_type &val = value_type())
@@ -558,7 +557,7 @@ namespace ft
 				}
 
 				// Returns pointer to the underlying array serving as element storage.
-				pointer	data(void)
+				pointer	data()
 				{
 					return (_array);
 				}
@@ -634,10 +633,9 @@ namespace ft
 					{
 						if (new_size > _capacity)
 							this->reserve(new_size);
-						for (size_type i = _size; i < new_size; i++)
+						for (size_type i = _size; i < new_size; i++, _size++)
 							_allocator.construct(_array + i, type);
 					}
-					_size = new_size;
 				}
 
 				/* Add an element at the end of the container.
@@ -939,6 +937,19 @@ namespace ft
 				}
 
 		};
+
+	// To be replaced with ft::equal
+	template <class T>
+		bool	operator==(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
+		{
+			return (std::equal(lhs.begin(), lhs.end(), rhs.begin()));
+		}
+
+	template <class T>
+		bool	operator!=(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
+		{
+			return (!(lhs == rhs));
+		}
 }
 
 #endif

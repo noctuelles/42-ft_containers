@@ -22,8 +22,6 @@ class	Dummy
 		Dummy(const Dummy& src) : _name(src._name), _anInt(new int)
 		{
 			*_anInt = *src._anInt;
-			if (count > 10)
-				throw (std::bad_exception());
 			count++;
 			//std::cout << "Dummy copy constructor called. _anInt :" << _anInt << '\n';
 		}
