@@ -1,3 +1,4 @@
+#include <exception>
 #include <iostream>
 
 #ifndef DUMMY_CLASS_HPP
@@ -8,35 +9,37 @@ class	Dummy
 	public:
 		static int count;
 
-		Dummy()
+		Dummy() : _name("DFLT")
 		{
-			std::cout << "Dummy default constructor called." << std::endl;
-			count++;
+			//std::cout << "Dummy default constructor called." << std::endl;
 		}
 
 		Dummy(const std::string& name) : _name(name), _anInt(new int)
 		{
-			std::cout << "Dummy parametric constructor called. _anInt:" << _anInt << '\n';
+			//std::cout << "Dummy parametric constructor called. _anInt:" << _anInt << '\n';
 		}
 
 		Dummy(const Dummy& src) : _name(src._name), _anInt(new int)
 		{
 			*_anInt = *src._anInt;
-			std::cout << "Dummy copy constructor called. _anInt :" << _anInt << '\n';
+			if (count > 10)
+				throw (std::bad_exception());
+			count++;
+			//std::cout << "Dummy copy constructor called. _anInt :" << _anInt << '\n';
 		}
 
 		Dummy&	operator=(const Dummy& lhs)
 		{
 			int*	pTmp;
 
-			std::cout << "Dummy copy assignment called. Destroying _anInt:" << _anInt << '\n';
+			//std::cout << "Dummy copy assignment called. Destroying _anInt:" << _anInt << '\n';
 			if (this != &lhs)
 			{
 				pTmp = _anInt;
 				_anInt = new int;
 				delete pTmp;
 				*_anInt = *lhs._anInt;
-				std::cout << "Replacing with " << _anInt << '\n';
+				//std::cout << "Replacing with " << _anInt << '\n';
 				_name = lhs._name;
 			}
 			return (*this);
@@ -49,7 +52,7 @@ class	Dummy
 
 		~Dummy()
 		{
-			std::cerr << "Dummy destructor called. _anInt : " << _anInt << '\n';
+			//std::cerr << "Dummy destructor called. _anInt : " << _anInt << '\n';
 			delete _anInt;
 		}
 

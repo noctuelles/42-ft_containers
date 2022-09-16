@@ -24,8 +24,6 @@ std::ostream&	operator<<(std::ostream& rhs, const Dummy& dummy)
 	return (rhs);
 }
 
-int	Dummy::count = 0;
-
 bool	vectorTest_Constructors()
 {
 	return (true);
@@ -42,7 +40,7 @@ void	print(const T& arg)
 	std::cout << arg;
 }
 
-void	insertTest()
+/*void	insertTest()
 {
 	struct timeval	begin, end;
 
@@ -50,7 +48,7 @@ void	insertTest()
 		ft::vector<Dummy>	dummyVector;
 
 		gettimeofday(&begin, NULL);
-		dummyVector.insert(dummyVector.begin(), Dummy("Test"));
+		dummyVector.insert(dummyVector.begin(), 4);
 		gettimeofday(&end, NULL);
 
 		//std::cout << "Your vector took " << getMillisecDifference(begin, end) << '\n';
@@ -82,31 +80,55 @@ void	insertTest()
 		dummyVector.insert(dummyVector.begin() + 2, anotherDummyVector.begin() + 1, anotherDummyVector.end());
 		std::for_each(dummyVector.begin(), dummyVector.end(), print<Dummy>);
 	}
-}
+}*/
+
+int Dummy::count = 0;
 
 int main(void)
 {
-	insertTest();
-	/*{
-		ft::vector<Dummy> dummyVector;
+	{
+		ft::vector<int> dummyVector;
+
 
 		std::cout << "INSERTING ELEMENTS\n";
-		dummyVector.insert(dummyVector.begin() + 1, 3, Dummy("Intru!"));
+		try
+		{
+			dummyVector.push_back(1);
+			dummyVector.push_back(2);
+			dummyVector.push_back(3);
+			dummyVector.push_back(4);
+			dummyVector.push_back(5);
+			dummyVector.push_back(6);
+
+			dummyVector.insert(dummyVector.begin() + 5, 0);
+		}
+		catch(...)
+		{
+
+		}
 
 		std::cout << "Final size : " << dummyVector.size() << '\n';
 		std::cout << "Final capacity : " << dummyVector.capacity() << '\n';
 		std::cout << "Value :\n\n";
-		for (ft::vector<Dummy>::iterator it = dummyVector.begin(); it != dummyVector.end(); it++)
+		for (ft::vector<int>::iterator it = dummyVector.begin(); it != dummyVector.end(); it++)
 		{
-			std::cout << *it;
+			std::cout << *it << '\n';
 		}
 	}
 	std::cout << "\n\n";
-	{
+	/*{
 		std::vector<Dummy> dummyVector;
+		dummyVector.push_back(Dummy("Bonjour1"));
+		dummyVector.push_back(Dummy("Bonjour2"));
+		dummyVector.push_back(Dummy("Bonjour3"));
+		dummyVector.push_back(Dummy("Bonjour4"));
+		dummyVector.push_back(Dummy("Bonjour5"));
+		dummyVector.push_back(Dummy("Bonjour6"));
+		dummyVector.push_back(Dummy("Bonjour7"));
+		dummyVector.push_back(Dummy("Bonjour8"));
 
 		std::cout << "INSERTING ELEMENTS\n";
-		dummyVector.insert(dummyVector.begin(), 3, Dummy("Intru!"));
+		dummyVector.insert(dummyVector.begin(), 9, Dummy("Intru!"));
 
 		std::cout << "Final size : " << dummyVector.size() << '\n';
 		std::cout << "Final capacity : " << dummyVector.capacity() << '\n';
