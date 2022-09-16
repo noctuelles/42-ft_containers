@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/21 12:42:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/16 15:55:35 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/16 20:08:55 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #include <typeinfo>
 #include <cstdlib>
 #include <algorithm>
+#include "algorithm.hpp"
 #include "Dummy.hpp"
 #include "type_traits.hpp"
 
@@ -409,8 +410,7 @@ namespace ft
 				vector(const vector& other) : _allocator(other._allocator), _size(other._size), _capacity(_size), _array()
 				{
 					_array = _allocator.allocate(_size);
-					for (size_type i = 0; i < _size; i++)
-						_allocator.construct(_array + i, other._array[i]);
+					this->_copyArray(_array, other._array, _size);
 				}
 
 				// Destructor
@@ -439,8 +439,7 @@ namespace ft
 						_capacity = _size;
 						_allocator = rhs._allocator;
 						_array = pTmpArray;
-						for (size_type i = 0; i < _size; i++)
-							_allocator.construct(_array + i, rhs._array[i]);
+						_copyArray(_array, rhs._array, _size);
 					}
 					return (*this);
 				}
@@ -519,17 +518,19 @@ namespace ft
 				}
 
 				// Same as operator[], but throws an exception if n >= size.
-				const_reference	at(size_type n)
+				const_reference	at(size_type n) const
 				{
 					if (n >= _size)
 						throw (std::out_of_range("vector::at"));
-					return (static_cast<const_reference>(_array[n]));
+					return (_array[n]);
 				}
 
 				// Same as const operator[], but throws an exception if n >= size.
-				reference	at(size_type n) const
+				reference	at(size_type n)
 				{
-					return (const_cast<reference>(this->at(n)));
+					return (const_cast<reference>(
+								static_cast<const vector&>(*this).at(n)
+								));
 				}
 
 				// Returns a const_reference to the first element of the array.
@@ -831,7 +832,7 @@ namespace ft
 					if (_size + count > _capacity)
 					{
 						iteratorDistance = std::distance(this->begin(), pos);
-						this->_reAlloc(_size + count);
+						this->reserve(_size + count);
 						pos = iterator(_array + iteratorDistance);
 					}
 					oldItEnd = this->end();
@@ -850,6 +851,24 @@ namespace ft
 						return (_capacity + n);
 				}
 
+				void	_copyArray(T* dest, T* src, size_type dest_size)
+				{
+					for (size_type i = 0; i < _size; i++)
+					{
+						try
+						{
+							_allocator.construct(dest + i, *(src + i));
+						}
+						catch(...)
+						{
+							for (size_type j = 0; j < i; j++)
+								_allocator.destroy(dest + j);
+							_allocator.deallocate(dest, dest_size);
+							throw;
+						}
+					}
+				}
+
 				void	_reAlloc(size_type n)
 				{
 					T*			pTemp;
@@ -863,49 +882,7 @@ namespace ft
 					 * should left untouched. */
 
 					pTemp = _allocator.allocate(reAllocSize);
-					for (size_type i = 0; i < _size; i++)
-					{
-						/* Catching every exception that a copy constructor can throw.
-						 * To avoir memory leaks in such case, each object constructed before the throw is destroyed
-						 * and the memory is deallocated.
-						 * The exception is then re-throw higher in the call stack. */
-
-						try { _allocator.construct(pTemp + i, *(_array + i)); }
-						catch (...)
-						{
-							for (size_type j = 0; j < i; j++)
-								_allocator.destroy(pTemp + j);
-							_allocator.deallocate(pTemp, reAllocSize);
-							throw;
-						}
-					}
-					for (size_type i = 0; i < _size; i++)
-						_allocator.destroy(_array + i);
-					if (_array)
-						_allocator.deallocate(_array, _capacity);
-					_capacity = reAllocSize;
-					_array = pTemp;
-				}
-
-				void	_reAllocCustom(iterator pos, size_type n, size_type count, const T& val)
-				{
-					T*			pTemp;
-					size_type	reAllocSize;
-					iterator	it;
-					size_type	i;
-
-					reAllocSize = this->_getReAllocSize(n);
-					pTemp = _allocator.allocate(reAllocSize);
-					for (it = this->begin(), i = 0; it != pos; it++, i++)
-					{
-						_allocator.construct(pTemp + i, *it.base());
-					}
-					for (; count; count--, i++)
-						_allocator.construct(pTemp + i, val);
-					for (++it; it != this->end(); it++, i++)
-						_allocator.construct(pTemp + i, *it.base());
-
-					// The array is destructed after construction of the new array if a constructor throws an exception.
+					_copyArray(pTemp, _array, reAllocSize);
 					for (size_type i = 0; i < _size; i++)
 						_allocator.destroy(_array + i);
 					if (_array)
@@ -942,7 +919,7 @@ namespace ft
 	template <class T>
 		bool	operator==(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
 		{
-			return (std::equal(lhs.begin(), lhs.end(), rhs.begin()));
+			return (lhs.size() == rhs.size() && ft::equal(lhs.begin(), lhs.end(), rhs.begin()));
 		}
 
 	template <class T>
