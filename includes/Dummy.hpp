@@ -9,7 +9,7 @@ class	Dummy
 	public:
 		static int count;
 
-		Dummy() : _name("DFLT")
+		Dummy() : _name("DFLT"), _anInt()
 		{
 			//std::cout << "Dummy default constructor called." << std::endl;
 		}
@@ -21,7 +21,8 @@ class	Dummy
 
 		Dummy(const Dummy& src) : _name(src._name), _anInt(new int)
 		{
-			*_anInt = *src._anInt;
+			if (src._anInt)
+				*_anInt = *src._anInt;
 			count++;
 			//std::cout << "Dummy copy constructor called. _anInt :" << _anInt << '\n';
 		}
@@ -51,7 +52,8 @@ class	Dummy
 		~Dummy()
 		{
 			//std::cerr << "Dummy destructor called. _anInt : " << _anInt << '\n';
-			delete _anInt;
+			if (_anInt)
+				delete _anInt;
 		}
 
 		const std::string&	getName(void) const
