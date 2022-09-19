@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 10:31:31 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/19 19:04:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/19 19:43:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -441,8 +441,7 @@ namespace ft
 						// the unneccesary elements.
 						if (rhsSize <= mySize)
 						{
-							std::copy(rhs.begin(), rhs.end(), this->_begin);
-							for (pointer p = this->_begin + rhsSize; p != this->_last; p++)
+							for (pointer p = std::copy(rhs.begin(), rhs.end(), this->_begin); p != this->_last; p++)
 								this->_allocator.destroy(p);
 						}
 						else
@@ -636,32 +635,14 @@ namespace ft
 					this->_last++;
 				}
 
-				void	insert(iterator pos, const T& value)
+				iterator	insert(iterator pos, const T& value)
 				{
-					return (insert(pos, 1, value));
+					return (insert_n_val(pos, 1, value));
 				}
 
 				void	insert(iterator pos, size_type count, const T& value)
 				{
-					if (size() + count > capacity())
-					{
-						vector	tmp;
-
-						tmp.reserve(size() + count);
-						tmp._last = std::uninitialized_copy(this->_begin, pos.base(), tmp._begin);
-						tmp._last = std::uninitialized_fill_n(tmp._last, count, value);
-						tmp._last = std::uninitialized_copy(pos.base(), this->_last, tmp._last);
-						swap(tmp);
-					}
-					else
-					{
-						pointer	p = this->_last;
-
-						// Because the vector capacity is big enough, resize just appends default-constructed T().
-						resize(size() + count);
-						std::copy_backward(pos.base(), p, this->_last);
-						std::fill_n(pos.base(), count, value);
-					}
+					_insert_n_val(pos, count, value);
 				}
 
 				template <class InputIt>
@@ -771,6 +752,33 @@ namespace ft
 						}
 					}
 
+				iterator	_insert_n_val(iterator pos, size_type count, const T& value)
+				{
+					size_type	iteratorDistance;
+
+					iteratorDistance = std::distance(this->_begin, pos.base());
+					if (size() + count > capacity())
+					{
+						vector	tmp;
+
+						tmp.reserve(size() + count);
+						tmp._last = std::uninitialized_copy(this->_begin, pos.base(), tmp._begin);
+						tmp._last = std::uninitialized_fill_n(tmp._last, count, value);
+						tmp._last = std::uninitialized_copy(pos.base(), this->_last, tmp._last);
+						swap(tmp);
+					}
+					else
+					{
+						pointer	p = this->_last;
+
+						// Because the vector capacity is big enough, resize just appends default-constructed T().
+						resize(size() + count);
+						std::copy_backward(pos.base(), p, this->_last);
+						std::fill_n(pos.base(), count, value);
+					}
+					return (iterator(this->_begin + iteratorDistance));
+				}
+
 				/* ######################### Assign tag dispatching ######################### */
 
 				template <class InputIt>
@@ -802,6 +810,10 @@ namespace ft
 						this->_last = this->_begin + count;
 					}
 
+				iterator	_update_iterator(iterator pos)
+				{
+
+				}
 				void _destroy_elements()
 				{
 					for (pointer p = this->_begin; p != this->_last; p++)

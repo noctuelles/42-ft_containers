@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/19 18:46:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/19 19:04:22 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/19 19:49:34 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,13 +29,9 @@ namespace ft
 				typedef typename Container::const_reference	const_reference;
 
 				explicit stack(const Container& cont = Container())
-					: c(cont)
-				{}
+					: c(cont) {}
 
-				~stack()
-				{
-					~c();
-				}
+				~stack() {}
 
 				stack&	operator=(const stack& other)
 				{
