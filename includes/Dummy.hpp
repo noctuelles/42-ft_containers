@@ -9,7 +9,7 @@ class	Dummy
 	public:
 		static int count;
 
-		Dummy() : _name("DFLT"), _anInt()
+		Dummy() : _name("DFLT"), _anInt(NULL)
 		{
 			//std::cout << "Dummy default constructor called." << std::endl;
 		}
@@ -36,7 +36,9 @@ class	Dummy
 			{
 				pTmp = _anInt;
 				_anInt = new int;
-				delete pTmp;
+				if (pTmp)
+					delete pTmp;
+
 				*_anInt = *lhs._anInt;
 				//std::cout << "Replacing with " << _anInt << '\n';
 				_name = lhs._name;

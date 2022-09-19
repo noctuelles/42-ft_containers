@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/16 19:14:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/17 15:08:46 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/19 16:44:43 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,23 +26,30 @@ namespace ft
 			T*					_end;			// End of allocated space.
 
 			vector_base(typename std::allocator<T>::size_type n)
-				: _allocator(), _begin(_allocator.allocate(n)), _last(_begin + n), _end(_begin + n)
-			{}
+				: _allocator(), _begin(), _last(), _end()
+			{
+				if (n > 0)
+					_begin = _allocator.allocate(n);
+				_last = _begin + n;
+				_end = _begin + n;
+			}
 
 			~vector_base()
 			{
-				_allocator.deallocate(_begin, _end - _begin);
+				if (_begin)
+					_allocator.deallocate(_begin, _end - _begin);
 			}
 
 		};
 
+	// Overload of std::swap for vector_base.
 	template <class T>
 		void	swap(vector_base<T>& a, vector_base<T>& b)
 		{
 			std::swap(a._allocator, b._allocator);
 			std::swap(a._begin, b._begin);
-			std::swap(a._end, b._end);
 			std::swap(a._last, b._last);
+			std::swap(a._end, b._end);
 		}
 }
 

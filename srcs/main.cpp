@@ -11,7 +11,9 @@
 #include <typeinfo>
 #include <stdio.h>
 #include <sys/time.h>
+#include <sstream>
 #include "Dummy.hpp"
+#include "print.hpp"
 #include "vector_new.hpp"
 
 std::ostream&	operator<<(std::ostream& rhs, const Dummy& dummy)
@@ -26,16 +28,13 @@ std::ostream&	operator<<(std::ostream& rhs, const Dummy& dummy)
 	return ((end.tv_sec * 1000 + end.tv_usec / 1000) - (begin.tv_sec * 1000 + begin.tv_usec / 1000));
 }*/
 
-template <class T>
-void	print(const T& arg)
-{
-	std::cout << arg;
-}
 
 int Dummy::count = 0;
 
 int main(void)
 {
+	std::list<Dummy>	listI(10, Dummy("yo"));
+
 	try
 	{
 		ft::vector<Dummy> v;
@@ -44,8 +43,9 @@ int main(void)
 		v.push_back(Dummy("2"));
 		v.push_back(Dummy("3"));
 		v.push_back(Dummy("4"));
+		v.reserve(15);
 
-		v.insert(v.begin(), 10000, Dummy("-2"));
+		v.assign(listI.begin(), listI.end());
 
 		std::cout << "Size " << v.size() << " and capacity " << v.capacity() << '\n';
 		std::for_each(v.begin(), v.end(), print<Dummy>);

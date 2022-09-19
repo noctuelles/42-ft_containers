@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 10:31:31 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/17 16:19:42 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/19 16:44:40 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,15 @@
 #include "type_traits.hpp"
 #include "vector_base.hpp"
 #include "iterators.hpp"
+#include "algorithm.hpp"
+#include "print.hpp"
 #include <algorithm>
 #include <exception>
 #include <iterator>
 #include <memory>
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 
 namespace ft
 {
@@ -35,10 +38,11 @@ namespace ft
 
 				/* ################################ Typedefs ################################ */
 
-				typedef std::allocator<T>							allocator_type;
+				typedef T											value_type;
+				typedef std::allocator<value_type>					allocator_type;
 
-				typedef typename allocator_type::reference			reference;
-				typedef typename allocator_type::const_reference	const_reference;
+				typedef value_type&									reference;
+				typedef const value_type&							const_reference;
 				typedef typename allocator_type::pointer			pointer;
 				typedef typename allocator_type::const_pointer		const_pointer;
 
@@ -376,14 +380,12 @@ namespace ft
 
 				/* ####################### Constructors & Destructor ######################## */
 
-				~vector()
-				{
-					clear();
-				}
 
 				vector()
 					: vector_base<T>(0)
-				{}
+				{
+					std::cout << "Vector default constructor\n";
+				}
 
 				explicit vector(size_type n, const T& val = T())
 					: vector_base<T>(n)
@@ -398,6 +400,11 @@ namespace ft
 					{
 						std::uninitialized_copy(first, last, this->_begin);
 					}
+
+				~vector()
+				{
+					clear();
+				}
 
 				vector(const vector& x)
 					: vector_base<T>(x.size())
@@ -419,7 +426,7 @@ namespace ft
 					{
 						// If the current capacity is lower than the size of the rhs vector,
 						// We perform a deep copy and reallocation.
-						if (this->capacity() < rhs.size())
+						if (capacity() < rhs.size())
 						{
 							vector	tmp(rhs);
 							this->swap(tmp);
@@ -473,11 +480,67 @@ namespace ft
 				}
 
 				template <class InputIt>
-					void	assign(InputIt first, InputIt last)
+					typename ft::enable_if<!ft::is_integral<InputIt>::value, void>::type
+					assign(InputIt first, InputIt last)
 					{
-						(void) first;
-						(void) last;
+						_assign_range(first, last, typename ft::iterator_traits<InputIt>::iterator_category());
 					}
+
+				/* ############################# Element Access ############################# */
+
+				reference	at(size_type pos)
+				{
+					return (const_cast<reference>(
+								static_cast<const vector&>(*this).at(pos)
+								));
+				}
+
+				const_reference	at(size_type pos) const
+				{
+					if (pos >= size())
+						throw(std::out_of_range("vector::at"));
+					return (this->_begin[pos]);
+				}
+
+				reference	operator[](size_type pos)
+				{
+					return (this->_begin[pos]);
+				}
+
+				const_reference	operator[](size_type pos) const
+				{
+					return (this->_begin[pos]);
+				}
+
+				reference	front()
+				{
+					return (*this->_begin);
+				}
+
+				const_reference	front() const
+				{
+					return (*this->_begin);
+				}
+
+				reference	back()
+				{
+					return (*(this->_last - 1));
+				}
+
+				const_reference	back() const
+				{
+					return (*(this->_last - 1));
+				}
+
+				pointer	data()
+				{
+					return (this->_begin);
+				}
+
+				const_pointer	data() const
+				{
+					return (this->_begin);
+				}
 
 				/* ########################## Iterators operations ########################## */
 
@@ -546,8 +609,7 @@ namespace ft
 					{
 						vector_base<T>	tmp(n);
 
-						std::uninitialized_copy(this->_begin, this->_last, tmp._begin);
-						tmp._last = tmp._begin + size();
+						tmp._last = std::uninitialized_copy(this->_begin, this->_last, tmp._begin);
 						this->_destroy_elements();
 						ft::swap(*this, tmp);
 					}
@@ -581,16 +643,34 @@ namespace ft
 
 				void	insert(iterator pos, size_type count, const T& value)
 				{
-					vector		tmp(size() + count);
-					pointer		pPos;
-					iterator	it;
+					if (size() + count > capacity())
+					{
+						vector	tmp;
 
-					pPos = pos.base();
-					it = std::copy(this->_begin, pPos, tmp.begin());
-					std::fill_n(it, count, value);
-					std::copy(pPos, this->_last, it + count);
-					swap(tmp);
+						tmp.reserve(size() + count);
+						tmp._last = std::uninitialized_copy(this->_begin, pos.base(), tmp._begin);
+						tmp._last = std::uninitialized_fill_n(tmp._last, count, value);
+						tmp._last = std::uninitialized_copy(pos.base(), this->_last, tmp._last);
+						swap(tmp);
+					}
+					else
+					{
+						pointer	p = this->_last;
+
+						// Because the vector capacity is big enough, resize just appends default-constructed T().
+						resize(size() + count);
+						std::copy_backward(pos.base(), p, this->_last);
+						std::fill_n(pos.base(), count, value);
+					}
 				}
+
+				template <class InputIt>
+					typename ft::enable_if<!ft::is_integral<InputIt>::value, void>::type
+					insert(iterator pos, InputIt first, InputIt last)
+					{
+						_insert_range(pos, first, last,
+								typename ft::iterator_traits<InputIt>::iterator_category());
+					}
 
 				iterator	erase(iterator pos)
 				{
@@ -644,11 +724,101 @@ namespace ft
 
 			private:
 
+				/* ######################### Insert tag dispatching ######################### */
+
+				/* Because input iterator impose single-pass algorithm, we can't determine the distance
+							vector	tmp;
+				 * between first and last using std::distance for example. */
+				template <class InputIt>
+					void _insert_range(iterator pos, InputIt first, InputIt last, std::input_iterator_tag)
+					{
+						vector	tmp;
+
+						tmp.reserve(this->_last - pos.base());
+						tmp._last = std::uninitialized_copy(pos.base(), this->_last, tmp._begin);
+						for (pointer p = pos.base(); p != this->_last; p++)
+							this->_allocator.destroy(p);
+						this->_last = pos.base();
+						for ( ; first != last; first++)
+							push_back(*first);
+						reserve(size() + tmp.size());
+						this->_last = std::uninitialized_copy(tmp.begin(), tmp.end(), this->_last);
+					}
+
+				template <class ForwardIt>
+					void _insert_range(iterator pos, ForwardIt first, ForwardIt last, std::forward_iterator_tag)
+					{
+						size_type	count;
+
+						count = std::distance(first, last);
+						if (size() + count > capacity())
+						{
+							vector	tmp;
+
+							tmp.reserve(size() + count);
+							tmp._last = std::uninitialized_copy(this->_begin, pos.base(), tmp._begin);
+							tmp._last = std::uninitialized_copy(first, last, tmp._last);
+							tmp._last = std::uninitialized_copy(pos.base(), this->_last, tmp._last);
+							swap(tmp);
+						}
+						else
+						{
+							pointer	p = this->_last;
+
+							resize(size() + count);
+							std::copy_backward(pos.base(), p, this->_last);
+							std::copy(first, last, pos.base());
+						}
+					}
+
+				/* ######################### Assign tag dispatching ######################### */
+
+				template <class InputIt>
+					void	_assign_range(InputIt first, InputIt last, std::input_iterator_tag)
+					{
+						vector	tmp;
+
+						for ( ; first != last; first++)
+							tmp.push_back(*first);
+						swap(tmp);
+					}
+
+				template <class ForwardIt>
+					void	_assign_range(ForwardIt first, ForwardIt last, std::forward_iterator_tag)
+					{
+						size_type	count;
+
+						count = std::distance(first, last);
+						if (count <= size())
+						{
+							for (pointer p = std::copy(first, last, this->_begin); p != this->_last; p++)
+								this->_allocator.destroy(p);
+						}
+						else
+						{
+							resize(count);
+							std::copy(first, last, this->_begin);
+						}
+						this->_last = this->_begin + count;
+					}
+
 				void _destroy_elements()
 				{
 					for (pointer p = this->_begin; p != this->_last; p++)
 						this->_allocator.destroy(p);
 				}
 		};
+
+	template <class T>
+		bool	operator==(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
+		{
+			return (lhs.size() == rhs.size() && ft::equal(lhs.begin(), lhs.end(), rhs.begin()));
+		}
+
+	template <class T>
+		bool	operator!=(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
+		{
+			return (!(lhs == rhs));
+		}
 }
 #endif
