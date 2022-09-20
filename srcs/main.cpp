@@ -3,12 +3,14 @@
 #include <iterator>
 #include <memory>
 #include <ostream>
+#include <string>
 #include <utility>
 #include <list>
 #include <vector>
 #include <iostream>
 #include <stdlib.h>
 #include <typeinfo>
+#include <map>
 #include <stdio.h>
 #include <iomanip>
 #include <sys/time.h>
@@ -117,12 +119,8 @@ int main(void)
 
 	try
 	{
-		ft::vector<int>	v(20, 123);
-		ft::vector<int>::iterator	it_n;
-		ft::vector<int>::const_iterator it;
 
-		it = v.begin();
-		it += 2;
+		insertTest();
 	}
 	catch(...)
 	{
