@@ -119,8 +119,10 @@ int main(void)
 
 	try
 	{
+		ft::vector<int>::reverse_iterator	itr;
 
-		insertTest();
+		itr = itr + 5;
+		itr = itr - 5;
 	}
 	catch(...)
 	{
