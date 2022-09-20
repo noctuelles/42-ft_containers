@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 10:31:31 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/19 19:43:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/20 14:19:01 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,9 +255,21 @@ namespace ft
 							return (*this);
 						}
 
+						const_iterator&	operator+=(difference_type rhs)
+						{
+							_ptr += rhs;
+							return (*this);
+						}
+
 						const_iterator&	operator-=(const const_iterator& rhs)
 						{
 							_ptr -= rhs._ptr;
+							return (*this);
+						}
+
+						const_iterator&	operator-=(difference_type rhs)
+						{
+							_ptr -= rhs;
 							return (*this);
 						}
 
@@ -337,7 +349,7 @@ namespace ft
 
 						/* Binary Operators */
 
-						const_iterator	operator+(const difference_type& rhs) const
+						const_iterator	operator+(difference_type rhs) const
 						{
 							return (const_iterator(_ptr + rhs));
 						}
@@ -352,7 +364,7 @@ namespace ft
 							return (_ptr + rhs._ptr);
 						}
 
-						const_iterator	operator-(const difference_type& rhs) const
+						const_iterator	operator-(difference_type rhs) const
 						{
 							return (const_iterator(_ptr - rhs));
 						}
@@ -375,6 +387,7 @@ namespace ft
 						}
 
 					private:
+
 						pointer	_ptr;
 				};
 
@@ -383,9 +396,7 @@ namespace ft
 
 				vector()
 					: vector_base<T>(0)
-				{
-					std::cout << "Vector default constructor\n";
-				}
+				{}
 
 				explicit vector(size_type n, const T& val = T())
 					: vector_base<T>(n)
@@ -396,9 +407,10 @@ namespace ft
 				template <class InputIt>
 					vector(InputIt first, InputIt last,
 							typename ft::enable_if<!ft::is_integral<InputIt>::value>::type* = 0)
-						: vector_base<T>(std::distance(first, last))
+						: vector_base<T>(0)
 					{
-						std::uninitialized_copy(first, last, this->_begin);
+						_insert_range(this->_begin, first, last,
+								typename ft::iterator_traits<InputIt>::iterator_category());
 					}
 
 				~vector()
@@ -414,18 +426,12 @@ namespace ft
 
 				/* ############################## Assignation ############################### */
 
-				// Note that this copy-assignmenet operator offer basic exception guarantee.
-				// If the copy assignment of T (T::operator=() ) throws an exception,
-				// the current instance is already modified by previous assignment made.
 				vector&	operator=(const vector& rhs)
 				{
-					size_type	mySize;
-					size_type	rhsSize;
-
 					if (this != &rhs)
 					{
-						// If the current capacity is lower than the size of the rhs vector,
-						// We perform a deep copy and reallocation.
+						size_type	mySize, rhsSize;
+
 						if (capacity() < rhs.size())
 						{
 							vector	tmp(rhs);
@@ -436,9 +442,6 @@ namespace ft
 						mySize = size();
 						rhsSize = rhs.size();
 
-						// If the vector we want to copy have equals size of less.
-						// We copy every elements of the rhs vector into ours, and then destruct
-						// the unneccesary elements.
 						if (rhsSize <= mySize)
 						{
 							for (pointer p = std::copy(rhs.begin(), rhs.end(), this->_begin); p != this->_last; p++)
@@ -446,7 +449,7 @@ namespace ft
 						}
 						else
 						{
-							std::copy(rhs.begin(), rhs.begin() + mySize, this-> _begin);
+							std::copy(rhs.begin(), rhs.begin() + mySize, this->_begin);
 							std::uninitialized_copy(rhs.begin() + mySize, rhs.end(), this->_last);
 						}
 						this->_last = this->_begin + rhsSize;
@@ -637,7 +640,7 @@ namespace ft
 
 				iterator	insert(iterator pos, const T& value)
 				{
-					return (insert_n_val(pos, 1, value));
+					return (_insert_n_val(pos, 1, value));
 				}
 
 				void	insert(iterator pos, size_type count, const T& value)
@@ -810,10 +813,6 @@ namespace ft
 						this->_last = this->_begin + count;
 					}
 
-				iterator	_update_iterator(iterator pos)
-				{
-
-				}
 				void _destroy_elements()
 				{
 					for (pointer p = this->_begin; p != this->_last; p++)
@@ -830,7 +829,47 @@ namespace ft
 	template <class T>
 		bool	operator!=(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
 		{
-			return (!(lhs == rhs));
+			return !(lhs == rhs);
+		}
+
+	template <class T>
+		bool	operator<(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
+		{
+			return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));
+		}
+
+	template <class T>
+		bool	operator<=(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
+		{
+			if (lhs == rhs)
+				return (true);
+			else
+				return (lhs < rhs);
+		}
+
+	template <class T>
+		bool	operator>(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
+		{
+			if (lhs == rhs)
+				return (false);
+			else
+				return !(lhs < rhs);
+		}
+
+	template <class T>
+		bool	operator>=(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
+		{
+			if (lhs == rhs)
+				return (true);
+			else
+				return !(lhs < rhs);
+		}
+
+	template <class T>
+		void	swap(ft::vector<T> lhs, ft::vector<T> rhs)
+		{
+			lhs.swap(rhs);
 		}
 }
+
 #endif

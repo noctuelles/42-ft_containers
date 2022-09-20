@@ -46,6 +46,11 @@ class	Dummy
 			return (*this);
 		}
 
+		bool	operator==(const Dummy& rhs)
+		{
+			return (_name == rhs._name);
+		}
+
 		int	operator&()
 		{
 			return (2);

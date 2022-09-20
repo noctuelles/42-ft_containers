@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/07 15:16:39 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/19 16:44:47 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/20 13:25:27 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,19 @@ namespace ft
 			return (true);
 		}
 
-	/*template <class InputIterator1, class InputIterator2>
-		bool	lexicographical_compare(InputIterator1 first1, InputIterator2 last1,
-				InputIterator2 first2, InputIterator2 last2)
+	template <class InputIt1, class InputIt2>
+		bool	lexicographical_compare(InputIt1 first1, InputIt1 last1,
+				InputIt2 first2, InputIt2 last2)
 		{
-		}*/
+			for ( ; first1 != last1 && first2 != last2; first1++, first2++)
+			{
+				if (*first1 < *first2)
+					return (true);
+				if (*first2 < *first1)
+					return (false);
+			}
+			return (first1 == last1 && first2 != last2);
+		}
 }
 
 #endif
