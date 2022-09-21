@@ -115,14 +115,12 @@ int Dummy::count = 0;
 
 int main(void)
 {
-	std::list<Dummy>	listI(10, Dummy("yo"));
-
 	try
 	{
 		ft::vector<int>::reverse_iterator	itr;
 
 		itr = itr + 5;
-		itr = itr - 5;
+		itr = 5 + itr;
 	}
 	catch(...)
 	{

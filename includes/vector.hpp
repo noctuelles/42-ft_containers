@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 10:31:31 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/20 20:03:56 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/21 13:21:31 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #include "vector_base.hpp"
 #include "iterators.hpp"
 #include "algorithm.hpp"
-#include "print.hpp"
 #include <algorithm>
 #include <exception>
 #include <iterator>
@@ -39,8 +38,8 @@ namespace ft
 				typedef T											value_type;
 				typedef std::allocator<value_type>					allocator_type;
 
-				typedef value_type&									reference;
-				typedef const value_type&							const_reference;
+				typedef typename allocator_type::reference			reference;
+				typedef typename allocator_type::const_reference	const_reference;
 				typedef typename allocator_type::pointer			pointer;
 				typedef typename allocator_type::const_pointer		const_pointer;
 
@@ -52,8 +51,6 @@ namespace ft
 
 				typedef ft::reverse_iterator<iterator>				reverse_iterator;
 				typedef ft::reverse_iterator<const_iterator>		const_reverse_iterator;
-
-				/* ############################### Iterators ################################ */
 
 				/* ####################### Constructors & Destructor ######################## */
 

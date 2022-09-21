@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/25 14:20:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/20 20:56:27 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/21 16:32:28 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 # include <iterator>
 # include <cstddef>
+# include <iostream>
 
 namespace ft
 {
@@ -325,11 +326,11 @@ namespace ft
 		{
 			public:
 
-				typedef typename ft::iterator_traits<It>::value_type		value_type;
-				typedef typename ft::iterator_traits<It>::pointer			pointer;
-				typedef typename ft::iterator_traits<It>::reference			reference;
-				typedef typename ft::iterator_traits<It>::difference_type	difference_type;
-				typedef typename ft::iterator_traits<It>::iterator_category	iterator_category;
+				typedef typename iterator_traits<It>::value_type		value_type;
+				typedef typename iterator_traits<It>::pointer			pointer;
+				typedef typename iterator_traits<It>::reference			reference;
+				typedef typename iterator_traits<It>::difference_type	difference_type;
+				typedef typename iterator_traits<It>::iterator_category	iterator_category;
 
 				normal_iterator()
 					: _curr(It()) {}
