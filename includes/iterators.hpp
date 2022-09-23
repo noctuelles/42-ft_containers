@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/25 14:20:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/22 17:31:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/23 20:20:52 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 // std::ptrdiff_t is a type that can hold any result of pointer arithmetic operation.
 
+#include "RBTNode.hpp"
 # include <iterator>
 # include <cstddef>
 # include <iostream>
@@ -49,6 +50,20 @@ namespace ft
 			 class Pointer = T*,
 			 class Reference = T&>
 		struct iterator
+		{
+			typedef T			value_type;
+			typedef Distance	difference_type;
+			typedef Pointer		pointer;
+			typedef Reference	reference;
+			typedef Category	iterator_category;
+		};
+
+	template <class Category,
+			 class T,
+			 class Distance = std::ptrdiff_t,
+			 class Pointer = const T*,
+			 class Reference = const T&>
+		struct const_iterator
 		{
 			typedef T			value_type;
 			typedef Distance	difference_type;
@@ -510,5 +525,166 @@ namespace ft
 
 	/* reverse_iterator implementation. */
 
+	// V c'est le type de noeud (const RBTree_node ou RBTree_node)
+	template <class T>
+		class rbt_iterator : public ft::iterator<std::bidirectional_iterator_tag, T>
+		{
+			public:
+
+				typedef typename iterator_traits<T>::value_type			value_type;
+				typedef typename iterator_traits<T>::pointer			pointer;
+				typedef typename iterator_traits<T>::reference			reference;
+
+				typedef RBTNode_Base::base_ptr		base_ptr;
+				typedef RBTNode<T>*					link_type;
+
+				rbt_iterator()
+					: _M_node() {}
+				explicit rbt_iterator(link_type node)
+					: _M_node(node) {}
+				~rbt_iterator();
+
+				reference	operator*()
+				{
+					return (static_cast<link_type>(_M_node)->_M_value);
+				}
+
+				pointer	operator->()
+				{
+					return(&operator*());
+				}
+
+				rbt_iterator&	operator++()
+				{
+					_M_node = rbt_node_increment(_M_node);
+					return (*this);
+				}
+
+				rbt_iterator	operator++(int)
+				{
+					rbt_iterator	tmp;
+
+					tmp = *this;
+					_M_node = rbt_node_increment(_M_node);
+					return (tmp);
+				}
+
+				rbt_iterator&	operator--()
+				{
+					_M_node = rbt_node_decrement(_M_node);
+					return (*this);
+				}
+
+				rbt_iterator	operator--(int)
+				{
+					rbt_iterator	tmp;
+
+					tmp = *this;
+					_M_node = rbt_node_decrement(_M_node);
+					return (tmp);
+				}
+
+				bool	operator==(const rbt_iterator& rhs) const
+				{
+					return (_M_node == rhs._M_node);
+				}
+
+				bool	operator!=(const rbt_iterator& rhs) const
+				{
+					return (_M_node != rhs._M_node);
+				}
+
+			private:
+
+				base_ptr	_M_node;
+		};
+
+	template <class T>
+		class const_rbt_iterator : public ft::const_iterator<std::bidirectional_iterator_tag, T>
+		{
+			public:
+
+				typedef typename iterator_traits<T>::value_type			value_type;
+				typedef typename iterator_traits<T>::pointer			pointer;
+				typedef typename iterator_traits<T>::reference			reference;
+
+				typedef RBTNode_Base::const_base_ptr	base_ptr;
+				typedef const RBTNode<T>*				link_type;
+
+				const_rbt_iterator()
+					: _M_node() {}
+				explicit const_rbt_iterator(link_type node)
+					: _M_node(node) {}
+				// non const_iterator is able to be promoted to a const_iterator
+				const_rbt_iterator(const rbt_iterator<T>& it)
+					: _M_node(it._M_node) {}
+				~const_rbt_iterator();
+
+				reference	operator*()
+				{
+					return (static_cast<link_type>(_M_node)->_M_value);
+				}
+
+				pointer	operator->()
+				{
+					return(&operator*());
+				}
+
+				const_rbt_iterator&	operator++()
+				{
+					_M_node = rbt_node_increment(_M_node);
+					return (*this);
+				}
+
+				const_rbt_iterator	operator++(int)
+				{
+					const_rbt_iterator	tmp;
+
+					tmp = *this;
+					_M_node = rbt_node_increment(_M_node);
+					return (tmp);
+				}
+
+				const_rbt_iterator&	operator--()
+				{
+					_M_node = rbt_node_decrement(_M_node);
+					return (*this);
+				}
+
+				const_rbt_iterator	operator--(int)
+				{
+					const_rbt_iterator	tmp;
+
+					tmp = *this;
+					_M_node = rbt_node_decrement(_M_node);
+					return (tmp);
+				}
+
+				bool	operator==(const const_rbt_iterator& rhs) const
+				{
+					return (_M_node == rhs._M_node);
+				}
+
+				bool	operator!=(const const_rbt_iterator& rhs) const
+				{
+					return (_M_node != rhs._M_node);
+				}
+
+			private:
+
+				base_ptr	_M_node;
+		};
+
+	template <class U>
+		inline bool	operator==(const rbt_iterator<U>& lhs, const const_rbt_iterator<U>& rhs)
+		{
+			return (lhs._M_node == rhs._M_node);
+		}
+	template <class U>
+		inline bool	operator!=(const rbt_iterator<U>& lhs, const const_rbt_iterator<U>& rhs)
+		{
+			return (lhs._M_node != rhs._M_node);
+		}
 }
+
 #endif

@@ -6,14 +6,18 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/22 17:31:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/23 18:15:21 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef RBT_TEMPLATE_CLASS_HPP
 # define RBT_TEMPLATE_CLASS_HPP
 
+#include "pair.hpp"
+#include "iterators.hpp"
 #include <functional>
+#include <iostream>
+#include <iterator>
 #include <memory>
 
 namespace ft
@@ -46,17 +50,11 @@ namespace ft
 					clear();
 				}
 
-				class bst_iterator
-				{
-					public:
-
-					private:
-						node_ptr	_m_current;
-				};
-
 				/* ######################## Public members functions ######################## */
 
-				void	insert(const value_type& val = value_type())
+				/* Insert a key val into the current tree.
+				 * Returns false if the key already exist; otherwise returns true. */
+				ft::pair<node_ptr, bool>	insert(const value_type& val = value_type())
 				{
 					node_ptr	x, y;
 
@@ -70,7 +68,7 @@ namespace ft
 						else if (!_m_cmp(val, x->value))
 							x = x->right;
 						else
-							return ;
+							return (ft::make_pair(x, false));
 					}
 					if (y == NULL)
 						x = _m_root = _m_allocator.allocate(1);
@@ -80,6 +78,36 @@ namespace ft
 						x = y->right = _m_allocator.allocate(1);
 					_m_allocator.construct(x, node_type(val));
 					x->parent = y;
+					return (ft::make_pair(x, true));
+				}
+
+				void	erase(const value_type& val)
+				{
+					node_ptr	z;
+
+					z = _m_search(val);
+					if (z)
+						_m_delete_node(z);
+				}
+
+				node_ptr	getRoot() const
+				{
+					return (_m_root);
+				}
+
+				node_ptr	minimum()	const
+				{
+					return (_m_minimum(_m_root));
+				}
+
+				node_ptr	maximum() const
+				{
+					return (_m_maximum(_m_root));
+				}
+
+				void	print()
+				{
+					_m_debug_print("", _m_root, false);
 				}
 
 				void	clear()
@@ -104,10 +132,14 @@ namespace ft
 					RBTNode(const value_type& val)
 						: value(val), parent(), left(), right() {}
 
+					enum color {black, red};
+
 					value_type	value;
+					color		color;
 					node_ptr	parent;
 					node_ptr	left;
 					node_ptr	right;
+
 				};
 
 				/* ########################### Private functions ############################ */
@@ -129,7 +161,7 @@ namespace ft
 					while (y != NULL && x == y->right)
 					{
 						x = y;
-						y = x->parent;
+						y = y->parent;
 					}
 					return (y);
 				}
@@ -149,6 +181,63 @@ namespace ft
 					return (y);
 				}
 
+				/* _m_transplant replaces the subtree rooted as u by the subtree rooted as v.
+				 * Thus, u's parent becomes node v's parent, and u's parent ends up having
+				 * v as it's appropriate child. */
+				void	_m_transplant(node_ptr u, node_ptr v)
+				{
+					if (u->parent == NULL)
+						_m_root = v;
+					else if (u == u->parent->left)
+						u->parent->left = v;
+					else
+						u->parent->right = v;
+					if (v != NULL)
+						v->parent = u->parent;
+				}
+
+				/* _m_delete_node delete a given node z.
+				 * z cannot be NULL. */
+				void	_m_delete_node(node_ptr z)
+				{
+					if (z->left == NULL)
+						_m_transplant(z, z->right);
+					else if (z->right == NULL)
+						_m_transplant(z, z->left);
+					else
+					{
+						node_ptr	y;				/* y is z succesor. */
+
+						y = _m_minimum(z->right);
+						if (y->parent != z)
+						{
+							_m_transplant(y, y->right);
+							y->right = z->right;
+							y->right->parent = y;
+						}
+						_m_transplant(z, y);
+						y->left = z->left;
+						y->left->parent = y;
+					}
+					_m_allocator.destroy(z);
+					_m_allocator.deallocate(z, 1);
+				}
+
+				node_ptr	_m_search(const value_type& val)
+				{
+					node_ptr	x;
+
+					x = _m_root;
+					while (x != NULL && x->value != val)
+					{
+						if (_m_cmp(val, x->value))
+							x = x->left;
+						else
+							x = x->right;
+					}
+					return (x);
+				}
+
 				void	_m_clear(node_ptr x)
 				{
 					if (x == NULL)
@@ -164,6 +253,18 @@ namespace ft
 					{
 						_m_allocator.destroy(x->right);
 						_m_allocator.deallocate(x->right, 1);
+					}
+				}
+
+				void	_m_debug_print(const std::string& prefix, node_ptr x, bool isLeft)
+				{
+					if (x != NULL)
+					{
+						std::cout << prefix;
+						std::cout << (isLeft ? "├──" : "└──");
+						std::cout << x->value << std::endl;
+						_m_debug_print(prefix + (isLeft ? "│   " : "    "), x->left, true);
+						_m_debug_print(prefix + (isLeft ? "│   " : "    "), x->right, false);
 					}
 				}
 
