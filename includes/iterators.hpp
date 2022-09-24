@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/25 14:20:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/23 20:20:52 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/24 18:28:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -525,7 +525,7 @@ namespace ft
 
 	/* reverse_iterator implementation. */
 
-	// V c'est le type de noeud (const RBTree_node ou RBTree_node)
+	// Unfortunatly, we can't avoid code duplication for non-const and const iterator.
 	template <class T>
 		class rbt_iterator : public ft::iterator<std::bidirectional_iterator_tag, T>
 		{
@@ -615,7 +615,7 @@ namespace ft
 					: _M_node() {}
 				explicit const_rbt_iterator(link_type node)
 					: _M_node(node) {}
-				// non const_iterator is able to be promoted to a const_iterator
+				// non const_iterator is able to be "promoted" to a const_iterator
 				const_rbt_iterator(const rbt_iterator<T>& it)
 					: _M_node(it._M_node) {}
 				~const_rbt_iterator();

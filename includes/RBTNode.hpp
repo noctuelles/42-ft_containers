@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/23 10:11:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/23 20:21:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/24 18:28:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,25 @@
 #include <cctype>
 #include <memory>
 
+/* This is an implementation of a Red Black Tree, which is one type of balanced
+ * binary search tree, inspired by:
+ *
+ *      Cormen, Leiserson, Rivest, Stein : Introduction to Algorithms, 3rd Edition 
+ *
+ * and the gcc implementation:
+ *
+ *      https://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.1/stl__tree_8h-source.html
+ *
+ * I made a lot of comments: mainly for myself. I learned a lot from reading gcc's implementation,
+ * but because my C++ experience is three month long, i need to comments a lot to fix things
+ * in my memory and to have a proper understanding of what i write.
+ */
+
 namespace ft
 {
 	enum	RBTNode_Color {black, red};
 
+	// A node can have no value : for example the sentinel of the red-black-tree.
 	struct RBTNode_Base
 	{
 		typedef RBTNode_Base*		base_ptr;

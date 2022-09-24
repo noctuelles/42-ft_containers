@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/23 18:38:27 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/23 20:21:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/24 18:28:17 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ namespace ft
 	RBTNode_Base::const_base_ptr	rbt_node_increment(RBTNode_Base::const_base_ptr x) throw()
 	{
 		// const_cast is never a good idea but in this case it's safe : x is safe from modification.
-		// The sole purpose of const_cast here is to avoid code duplication.
+		// The sole purpose of using const_cast here is to avoid code duplication.
 		return (rbt_node_increment(const_cast<RBTNode_Base::base_ptr>(x)));
 	}
 

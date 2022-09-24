@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/23 18:15:21 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/24 18:28:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@
 
 #include "pair.hpp"
 #include "iterators.hpp"
+#include "RBTNode.hpp"
+#include "ftl_utils.hpp"
+#include <cstddef>
 #include <functional>
 #include <iostream>
 #include <iterator>
@@ -22,239 +25,152 @@
 
 namespace ft
 {
-	// Pour le moment, 
-	template <class T, class Compare = std::less<T> >
+	// KeyOfValue is a functor that finds the key for a given Value.
+	template <class Key, class Value, class KeyOfValue, class KeyCompare = std::less<Value> >
 		class RBT
 		{
-			private:
-
-				struct RBTNode;
-
 			public:
 
 				/* ################################ Typedefs ################################ */
 
-				typedef T							value_type;
-				typedef Compare						key_compare;
-				typedef RBTNode						node_type;
+				typedef Key							key_type;
+				typedef Value						value_type;
+				typedef KeyCompare					key_compare;
+
+				typedef RBTNode<value_type>			node_type;
 				typedef node_type*					node_ptr;
-				typedef std::allocator<RBTNode>		allocator_type;
+				typedef const node_type*			const_node_ptr;
+
+				typedef std::allocator<node_type>	allocator_type;
+
+				typedef rbt_iterator<value_type>				iterator;
+				typedef const_rbt_iterator<value_type>			const_iterator;
+				typedef ft::reverse_iterator<iterator>			reverse_iterator;
+				typedef ft::reverse_iterator<const_iterator>	const_reverse_iterator;
+
+				typedef value_type*			pointer;
+				typedef const value_type*	const_pointer;
+				typedef value_type&			reference;
+				typedef const value_type&	const_reference;
+
+				typedef size_t			size_type;
+				typedef ptrdiff_t		difference_type;
+
+			private:
+
+				typedef RBTNode_Base::base_ptr			base_node_ptr;
+				typedef RBTNode_Base::const_base_ptr	const_base_node_ptr;
+
+				struct RBT_Base
+				{
+					allocator_type	_M_node_allocator;
+					key_compare		_M_key_cmp;
+					base_node_ptr		_M_root;
+					size_type		_M_nbr_node;
+
+					RBT_Base(const allocator_type& alloc = allocator_type(), const key_compare& comp = key_compare())
+						: _M_node_allocator(alloc), _M_key_cmp(comp), _M_root(NULL), _M_nbr_node(0)
+					{
+
+					}
+				};
+
+				// Return a const_reference to a value given a node x.
+				static const_reference	_S_value(const_node_ptr x)
+				{
+					return (x->_M_value);
+				}
+
+				// Return the key of a given node x.
+				static key_type&	_S_key(const_node_ptr x)
+				{
+					return (KeyOfValue()(_S_value(x)));
+				}
+
+				static base_node_ptr	_S_minimum(base_node_ptr x)
+				{
+					return (RBTNode_Base::minimum(x));
+				}
+
+				static const_base_node_ptr	_S_minimum(const_base_node_ptr x)
+				{
+					return (RBTNode_Base::minimum(x));
+				}
+
+				static base_node_ptr	_S_maximum(base_node_ptr x)
+				{
+					return (RBTNode_Base::maximum(x));
+				}
+
+				static const_base_node_ptr	_S_maximum(const_base_node_ptr x)
+				{
+					return (RBTNode_Base::maximum(x));
+				}
+
+			public:
 
 				/* ####################### Constructors & Destructor ######################## */
 
 				RBT()
-					: _m_allocator(), _m_cmp() ,_m_root() {}
+					: _M_base() {}
+
+				RBT(const key_compare& comp)
+					: _M_base(allocator_type(), comp) {}
+
+				RBT (const key_compare& comp, const allocator_type& alloc)
+					: _M_base(alloc, comp) {}
+
+				// Copy constructor, need deep copy of the tree!
+				RBT(const RBT<Key, Value, KeyOfValue, KeyCompare>& other)
+					: _M_base(other._M_base._M_node_allocator, other._M_base._M_key_cmp)
+				{}
 
 				~RBT()
 				{
-					clear();
+					// Free every tree node.
+				}
+
+				/* ################################ Accesors ################################ */
+
+				iterator	begin()
+				{
+
+				}
+
+				const_iterator	begin() const
+				{
+
+				}
+
+				iterator	end()
+				{
+
+				}
+
+				reverse_iterator	rbegin()
+				{
+					return (reverse_iterator(end()));
+				}
+
+				const_reverse_iterator	rend()
+				{
+					return (reverse_iterator(begin()));
+				}
+
+				bool	empty() const
+				{
+					return (_M_base._M_nbr_node == 0);
 				}
 
 				/* ######################## Public members functions ######################## */
-
-				/* Insert a key val into the current tree.
-				 * Returns false if the key already exist; otherwise returns true. */
-				ft::pair<node_ptr, bool>	insert(const value_type& val = value_type())
-				{
-					node_ptr	x, y;
-
-					x = _m_root;
-					y = NULL;
-					while (x != NULL)
-					{
-						y = x;
-						if (_m_cmp(val, x->value))
-							x = x->left;
-						else if (!_m_cmp(val, x->value))
-							x = x->right;
-						else
-							return (ft::make_pair(x, false));
-					}
-					if (y == NULL)
-						x = _m_root = _m_allocator.allocate(1);
-					else if (_m_cmp(val, y->value))
-						x = y->left = _m_allocator.allocate(1);
-					else
-						x = y->right = _m_allocator.allocate(1);
-					_m_allocator.construct(x, node_type(val));
-					x->parent = y;
-					return (ft::make_pair(x, true));
-				}
-
-				void	erase(const value_type& val)
-				{
-					node_ptr	z;
-
-					z = _m_search(val);
-					if (z)
-						_m_delete_node(z);
-				}
-
-				node_ptr	getRoot() const
-				{
-					return (_m_root);
-				}
-
-				node_ptr	minimum()	const
-				{
-					return (_m_minimum(_m_root));
-				}
-
-				node_ptr	maximum() const
-				{
-					return (_m_maximum(_m_root));
-				}
-
-				void	print()
-				{
-					_m_debug_print("", _m_root, false);
-				}
-
-				void	clear()
-				{
-					_m_clear(_m_root);
-					_m_allocator.destroy(_m_root);
-					_m_allocator.deallocate(_m_root, 1);
-				}
 
 			private:
 
 				/* ########################### Private attributes ########################### */
 
-				allocator_type	_m_allocator;
-				key_compare		_m_cmp;
-				node_ptr		_m_root;
+				RBT_Base	_M_base;
 
 				/* ########################### Private structure ############################ */
-
-				struct RBTNode
-				{
-					RBTNode(const value_type& val)
-						: value(val), parent(), left(), right() {}
-
-					enum color {black, red};
-
-					value_type	value;
-					color		color;
-					node_ptr	parent;
-					node_ptr	left;
-					node_ptr	right;
-
-				};
-
-				/* ########################### Private functions ############################ */
-
-				node_ptr	_m_minimum(node_ptr x)
-				{
-					while (x->left != NULL)
-						x = x->left;
-					return (x);
-				}
-
-				node_ptr	_m_succesor(node_ptr x)
-				{
-					node_ptr	y;
-
-					if (x->right != NULL)
-						return (_m_minimum(x->right));
-					y = x->parent;
-					while (y != NULL && x == y->right)
-					{
-						x = y;
-						y = y->parent;
-					}
-					return (y);
-				}
-
-				node_ptr	_m_predecessor(node_ptr x)
-				{
-					node_ptr	y;
-
-					if (x->left != NULL)
-						return (_m_maximum(x->left));
-					y = x->parent;
-					while (y != NULL && x == y->left)
-					{
-						x = y;
-						y = x->parent;
-					}
-					return (y);
-				}
-
-				/* _m_transplant replaces the subtree rooted as u by the subtree rooted as v.
-				 * Thus, u's parent becomes node v's parent, and u's parent ends up having
-				 * v as it's appropriate child. */
-				void	_m_transplant(node_ptr u, node_ptr v)
-				{
-					if (u->parent == NULL)
-						_m_root = v;
-					else if (u == u->parent->left)
-						u->parent->left = v;
-					else
-						u->parent->right = v;
-					if (v != NULL)
-						v->parent = u->parent;
-				}
-
-				/* _m_delete_node delete a given node z.
-				 * z cannot be NULL. */
-				void	_m_delete_node(node_ptr z)
-				{
-					if (z->left == NULL)
-						_m_transplant(z, z->right);
-					else if (z->right == NULL)
-						_m_transplant(z, z->left);
-					else
-					{
-						node_ptr	y;				/* y is z succesor. */
-
-						y = _m_minimum(z->right);
-						if (y->parent != z)
-						{
-							_m_transplant(y, y->right);
-							y->right = z->right;
-							y->right->parent = y;
-						}
-						_m_transplant(z, y);
-						y->left = z->left;
-						y->left->parent = y;
-					}
-					_m_allocator.destroy(z);
-					_m_allocator.deallocate(z, 1);
-				}
-
-				node_ptr	_m_search(const value_type& val)
-				{
-					node_ptr	x;
-
-					x = _m_root;
-					while (x != NULL && x->value != val)
-					{
-						if (_m_cmp(val, x->value))
-							x = x->left;
-						else
-							x = x->right;
-					}
-					return (x);
-				}
-
-				void	_m_clear(node_ptr x)
-				{
-					if (x == NULL)
-						return ;
-					_m_clear(x->left);
-					if (x->left)
-					{
-						_m_allocator.destroy(x->left);
-						_m_allocator.deallocate(x->left, 1);
-					}
-					_m_clear(x->right);
-					if (x->right)
-					{
-						_m_allocator.destroy(x->right);
-						_m_allocator.deallocate(x->right, 1);
-					}
-				}
 
 				void	_m_debug_print(const std::string& prefix, node_ptr x, bool isLeft)
 				{
