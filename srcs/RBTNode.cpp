@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/23 18:38:27 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/24 18:28:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/28 18:21:49 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ namespace ft
 		if (x->_M_right != NULL)
 			return (RBTNode_Base::minimum(x->_M_right));
 		y = x->_M_parent;
-		while (y != NULL && x == y->_M_right)
+		while (x == y->_M_right)
 		{
 			x = y;
 			y = y->_M_parent; // or x->_M_parent
@@ -48,10 +48,12 @@ namespace ft
 	{
 		RBTNode_Base::base_ptr	y;
 
+		if (x->_M_parent->_M_parent == x) // If this is the nil node.
+			return (x->_M_right); // Return the rightmost node. (case for the end iterator)
 		if (x->_M_left != NULL)
 			return (RBTNode_Base::maximum(x->_M_right));
 		y = x->_M_parent;
-		while (y != NULL && x == y->_M_left)
+		while (x == y->_M_left)
 		{
 			x = y;
 			y = y->_M_parent;

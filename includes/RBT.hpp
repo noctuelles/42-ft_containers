@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/24 18:28:12 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/28 18:32:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,16 +63,33 @@ namespace ft
 
 				struct RBT_Base
 				{
-					allocator_type	_M_node_allocator;
-					key_compare		_M_key_cmp;
-					base_node_ptr		_M_root;
-					size_type		_M_nbr_node;
+					public:
 
-					RBT_Base(const allocator_type& alloc = allocator_type(), const key_compare& comp = key_compare())
-						: _M_node_allocator(alloc), _M_key_cmp(comp), _M_root(NULL), _M_nbr_node(0)
-					{
+						/*
+						 * The header contains information about the current tree (like a header document that
+						 * contains informations about the document...) :
+						 *
+						 *     -> the root node : _M_parent.
+						 *     -> the leftmost node of the tree : _M_left.
+						 *     -> the rightmost node of the tree : _M_right.
+						 *
+						 * Note that the root also has the header as a parent. Thus :
+						 *
+						 *     _M_header._M_parent == root && root->_M_parent == &header.
+						 */
 
-					}
+						allocator_type	_M_node_allocator;
+						key_compare		_M_key_cmp;
+						RBTNode_Base	_M_header;
+						size_type		_M_nbr_node;
+
+						RBT_Base(const allocator_type& alloc = allocator_type(), const key_compare& comp = key_compare())
+							: _M_node_allocator(alloc), _M_key_cmp(comp), _M_header(), _M_nbr_node()
+						{
+							_M_header._M_color = red;
+							_M_header._M_left = &_M_header;
+							_M_header._M_right = &_M_header;
+						}
 				};
 
 				// Return a const_reference to a value given a node x.
@@ -107,6 +124,30 @@ namespace ft
 					return (RBTNode_Base::maximum(x));
 				}
 
+				/* Why do we have node_ptr and const_node_ptr as return type ?
+				 * We want to be able to create iterator and const_iterator by calling these function, so we need a const and non-const version.
+				 * We use a static_cast to promote a node_base_ptr to a node_ptr, thus allowing us to have access to _M_value field. */
+
+				node_ptr	_M_begin()
+				{
+					return (static_cast<node_ptr>(_M_base._M_header._M_parent));
+				}
+
+				const_node_ptr	_M_begin() const
+				{
+					return (static_cast<const_node_ptr>(_M_base._M_header._M_parent));
+				}
+
+				node_ptr	_M_end()
+				{
+					return (static_cast<node_ptr>(&_M_base._M_header));
+				}
+
+				const_node_ptr	_M_end() const
+				{
+					return (static_cast<const_node_ptr>(&_M_base._M_header));
+				}
+
 			public:
 
 				/* ####################### Constructors & Destructor ######################## */
@@ -134,17 +175,22 @@ namespace ft
 
 				iterator	begin()
 				{
-
+					return (iterator(static_cast<node_ptr>(_M_base._M_header._M_left)));
 				}
 
 				const_iterator	begin() const
 				{
-
+					return (const_iterator(static_cast<const_node_ptr>(_M_base._M_header._M_left)));
 				}
 
 				iterator	end()
 				{
+					return (iterator(_M_end()));
+				}
 
+				const_iterator	end() const
+				{
+					return (const_iterator(_M_end()));
 				}
 
 				reverse_iterator	rbegin()
@@ -152,9 +198,19 @@ namespace ft
 					return (reverse_iterator(end()));
 				}
 
-				const_reverse_iterator	rend()
+				const_reverse_iterator	rbegin() const
+				{
+					return (const_reverse_iterator(end()));
+				}
+
+				reverse_iterator	rend()
 				{
 					return (reverse_iterator(begin()));
+				}
+
+				const_reverse_iterator	rend() const
+				{
+					return (const_reverse_iterator(begin()));
 				}
 
 				bool	empty() const
@@ -171,6 +227,17 @@ namespace ft
 				RBT_Base	_M_base;
 
 				/* ########################### Private structure ############################ */
+
+				ft::pair<iterator, bool>	insert_unique_value(const value_type& v)
+				{
+					node_ptr	x = _M_begin(); // root
+					node_ptr	y = NULL;
+
+					while (x != NULL)
+					{
+						y = x;
+					}
+				}
 
 				void	_m_debug_print(const std::string& prefix, node_ptr x, bool isLeft)
 				{

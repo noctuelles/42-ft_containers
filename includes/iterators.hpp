@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/25 14:20:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/24 18:28:18 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/28 16:16:03 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -355,7 +355,7 @@ namespace ft
 
 				template <class Iter>
 					normal_iterator(const normal_iterator<Iter>& other)
-					:_curr(other.base()) {}
+					: _curr(other.base()) {}
 
 				reference	operator*() const
 				{
@@ -680,6 +680,7 @@ namespace ft
 		{
 			return (lhs._M_node == rhs._M_node);
 		}
+
 	template <class U>
 		inline bool	operator!=(const rbt_iterator<U>& lhs, const const_rbt_iterator<U>& rhs)
 		{
