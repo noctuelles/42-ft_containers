@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/28 18:32:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/29 18:38:58 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,15 @@
 
 namespace ft
 {
-	// KeyOfValue is a functor that finds the key for a given Value.
+				void	rbt_insert_n_balance(const bool insert_left,
+									RBTNode_Base* x,
+									RBTNode_Base* p,
+									RBTNode_Base& header);
+
+	/* Red Black Tree implementation, based on libstdc++ implementation, and Introduction to Algorithm
+	 * Note that the code concerning the RBT implemtation is hugely commented : this is not a good practice,
+	 * but this project being a pure exercice it holds a potentially big educational potential.
+	 */
 	template <class Key, class Value, class KeyOfValue, class KeyCompare = std::less<Value> >
 		class RBT
 		{
@@ -38,8 +46,8 @@ namespace ft
 				typedef KeyCompare					key_compare;
 
 				typedef RBTNode<value_type>			node_type;
-				typedef node_type*					node_ptr;
-				typedef const node_type*			const_node_ptr;
+				typedef RBTNode<value_type>*		node_ptr;
+				typedef const RBTNode<value_type>*	const_node_ptr;
 
 				typedef std::allocator<node_type>	allocator_type;
 
@@ -93,13 +101,18 @@ namespace ft
 				};
 
 				// Return a const_reference to a value given a node x.
-				static const_reference	_S_value(const_node_ptr x)
+				static const Value&	_S_value(const_node_ptr x)
 				{
 					return (x->_M_value);
 				}
 
+				static const Value&	_S_value(const_base_node_ptr x)
+				{
+					return (static_cast<const_node_ptr>(x)->_M_value);
+				}
+
 				// Return the key of a given node x.
-				static key_type&	_S_key(const_node_ptr x)
+				static const key_type&	_S_key(const_node_ptr x)
 				{
 					return (KeyOfValue()(_S_value(x)));
 				}
@@ -148,6 +161,43 @@ namespace ft
 					return (static_cast<const_node_ptr>(&_M_base._M_header));
 				}
 
+				node_ptr	_M_create_node(const value_type& val)
+				{
+					node_ptr	node;
+
+					node = _M_base._M_node_allocator.allocate(1);
+					try
+					{
+						_M_base._M_node_allocator.construct(&node->_M_value, val);
+					}
+					catch(...)
+					{
+						_M_base._M_node_allocator.deallocate(node, 1);
+						throw;
+					}
+					return (node);
+				}
+
+				static node_ptr	_S_left(base_node_ptr x)
+				{
+					return (static_cast<node_ptr>(x->_M_left));
+				}
+
+				static const_node_ptr	_S_left(const_base_node_ptr x)
+				{
+					return (static_cast<const_node_ptr>(x->_M_left));
+				}
+
+				static node_ptr	_S_right(base_node_ptr x)
+				{
+					return (static_cast<node_ptr>(x->_M_right));
+				}
+
+				static const_node_ptr	_S_right(const_base_node_ptr x)
+				{
+					return (static_cast<const_node_ptr>(x->_M_right));
+				}
+
 			public:
 
 				/* ####################### Constructors & Destructor ######################## */
@@ -160,7 +210,6 @@ namespace ft
 
 				RBT (const key_compare& comp, const allocator_type& alloc)
 					: _M_base(alloc, comp) {}
-
 				// Copy constructor, need deep copy of the tree!
 				RBT(const RBT<Key, Value, KeyOfValue, KeyCompare>& other)
 					: _M_base(other._M_base._M_node_allocator, other._M_base._M_key_cmp)
@@ -168,6 +217,11 @@ namespace ft
 
 				~RBT()
 				{
+					std::cout << "Header Recap : " << &_M_base._M_header << "\n\n";
+					std::cout << "Number of nodes : " << _M_base._M_nbr_node << '\n';
+					std::cout << "_M_right address : " << _M_base._M_header._M_right << ", value : " << _S_value(_M_base._M_header._M_right).second << '\n';
+					std::cout << "_M_left address : " << _M_base._M_header._M_left << ", value : " << _S_value(_M_base._M_header._M_left).second << '\n';
+					std::cout << "root : " << _M_base._M_header._M_parent << ", value : " << _S_value(_M_base._M_header._M_parent).second << '\n';
 					// Free every tree node.
 				}
 
@@ -185,12 +239,12 @@ namespace ft
 
 				iterator	end()
 				{
-					return (iterator(_M_end()));
+					return (iterator(static_cast<node_ptr>(&_M_base._M_header)));
 				}
 
 				const_iterator	end() const
 				{
-					return (const_iterator(_M_end()));
+					return (const_iterator(static_cast<const_node_ptr>(&_M_base._M_header)));
 				}
 
 				reverse_iterator	rbegin()
@@ -218,6 +272,21 @@ namespace ft
 					return (_M_base._M_nbr_node == 0);
 				}
 
+				ft::pair<iterator, bool>	insert_unique(const value_type& v)
+				{
+					return (_M_insert_unique_value(v));
+				}
+
+				template <class InputIt>
+					void	insert_unique(InputIt first, InputIt last)
+					{
+						while (first != last)
+						{
+							_M_insert_unique_value(*first);
+							first++;
+						}
+					}
+
 				/* ######################## Public members functions ######################## */
 
 			private:
@@ -228,15 +297,39 @@ namespace ft
 
 				/* ########################### Private structure ############################ */
 
-				ft::pair<iterator, bool>	insert_unique_value(const value_type& v)
+
+
+				iterator _M_insert(const bool insert_left, base_node_ptr p, const value_type& val)
+				{
+					node_ptr	z;
+
+					z = _M_create_node(val);
+					rbt_insert_n_balance(insert_left, z, p, _M_base._M_header);
+					_M_base._M_nbr_node++;
+					return (iterator(z));
+				}
+
+				// insert an unique value into the tree.
+				// if a value exist, the function return the iterator
+				ft::pair<iterator, bool>	_M_insert_unique_value(const value_type& v)
 				{
 					node_ptr	x = _M_begin(); // root
-					node_ptr	y = NULL;
+					node_ptr	y = _M_end();   // header
 
 					while (x != NULL)
 					{
 						y = x;
+						if (KeyOfValue()(v) == _S_key(x))
+							return (ft::pair<iterator, bool>(iterator(x), false));
+						if (_M_base._M_key_cmp(KeyOfValue()(v), _S_key(x))) // if v < x.key
+							x = _S_left(x);
+						else
+							x = _S_right(x);
 					}
+					if (y == _M_end() || _M_base._M_key_cmp(KeyOfValue()(v), _S_key(y)))
+						return (ft::pair<iterator, bool>(_M_insert(true, y, v), true));
+					else
+						return (ft::pair<iterator, bool>(_M_insert(false, y, v), true));
 				}
 
 				void	_m_debug_print(const std::string& prefix, node_ptr x, bool isLeft)

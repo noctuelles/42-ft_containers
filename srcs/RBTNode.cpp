@@ -6,11 +6,12 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/23 18:38:27 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/28 18:21:49 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/29 17:39:19 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RBTNode.hpp"
+#include <iostream>
 
 /* ####################### RBTNode related functions ######################## */
 
@@ -31,8 +32,19 @@ namespace ft
 		while (x == y->_M_right)
 		{
 			x = y;
-			y = y->_M_parent; // or x->_M_parent
+			y = y->_M_parent;
 		}
+		/* Consider the following case :
+		 *      H --> y
+		 *      |
+		 *      8 --> x
+		 *     /
+		 *    1
+		 * Note that H is the 'header' node.
+		 * x is the right child of y, because y
+		 */
+		if (x->_M_right == y) // in case of the root is also the rightmost node of the tree
+			y = x;
 		return (y);
 	}
 
@@ -48,10 +60,18 @@ namespace ft
 	{
 		RBTNode_Base::base_ptr	y;
 
-		if (x->_M_parent->_M_parent == x) // If this is the nil node.
-			return (x->_M_right); // Return the rightmost node. (case for the end iterator)
+		/* If the current node is the 'header' node and is being decremented :
+		 *
+		 *    -> return the rightmost node, i.e the maximum key of the tree.
+		 *
+		 * The 'header' node is also red : to be distinguish from the root that
+		 * shares the same mutual parent relationship.
+		 * The 'header' node is used as an end() iterator. */
+
+		if (x->_M_color == red && x->_M_parent->_M_parent == x)
+			return (x->_M_right);
 		if (x->_M_left != NULL)
-			return (RBTNode_Base::maximum(x->_M_right));
+			return (RBTNode_Base::maximum(x->_M_left));
 		y = x->_M_parent;
 		while (x == y->_M_left)
 		{

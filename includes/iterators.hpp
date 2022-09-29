@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/25 14:20:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/28 16:16:03 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/29 14:45:50 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -527,13 +527,15 @@ namespace ft
 
 	// Unfortunatly, we can't avoid code duplication for non-const and const iterator.
 	template <class T>
-		class rbt_iterator : public ft::iterator<std::bidirectional_iterator_tag, T>
+		struct rbt_iterator
 		{
 			public:
+				typedef T	value_type;
+				typedef T&	reference;
+				typedef T*	pointer;
 
-				typedef typename iterator_traits<T>::value_type			value_type;
-				typedef typename iterator_traits<T>::pointer			pointer;
-				typedef typename iterator_traits<T>::reference			reference;
+				typedef std::bidirectional_iterator_tag	iterator_category;
+				typedef ptrdiff_t						difference_type;
 
 				typedef RBTNode_Base::base_ptr		base_ptr;
 				typedef RBTNode<T>*					link_type;
@@ -542,7 +544,7 @@ namespace ft
 					: _M_node() {}
 				explicit rbt_iterator(link_type node)
 					: _M_node(node) {}
-				~rbt_iterator();
+				~rbt_iterator() {}
 
 				reference	operator*()
 				{
@@ -551,7 +553,7 @@ namespace ft
 
 				pointer	operator->()
 				{
-					return(&operator*());
+					return(&static_cast<link_type>(_M_node)->_M_value);
 				}
 
 				rbt_iterator&	operator++()
@@ -594,19 +596,20 @@ namespace ft
 					return (_M_node != rhs._M_node);
 				}
 
-			private:
-
 				base_ptr	_M_node;
 		};
 
 	template <class T>
-		class const_rbt_iterator : public ft::const_iterator<std::bidirectional_iterator_tag, T>
+		struct const_rbt_iterator
 		{
 			public:
 
-				typedef typename iterator_traits<T>::value_type			value_type;
-				typedef typename iterator_traits<T>::pointer			pointer;
-				typedef typename iterator_traits<T>::reference			reference;
+				typedef T			value_type;
+				typedef const T&	reference;
+				typedef const T*	pointer;
+
+				typedef std::bidirectional_iterator_tag	iterator_category;
+				typedef ptrdiff_t						difference_type;
 
 				typedef RBTNode_Base::const_base_ptr	base_ptr;
 				typedef const RBTNode<T>*				link_type;
@@ -618,7 +621,7 @@ namespace ft
 				// non const_iterator is able to be "promoted" to a const_iterator
 				const_rbt_iterator(const rbt_iterator<T>& it)
 					: _M_node(it._M_node) {}
-				~const_rbt_iterator();
+				~const_rbt_iterator() {}
 
 				reference	operator*()
 				{
@@ -669,8 +672,6 @@ namespace ft
 				{
 					return (_M_node != rhs._M_node);
 				}
-
-			private:
 
 				base_ptr	_M_node;
 		};
