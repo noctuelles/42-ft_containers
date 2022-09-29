@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/29 18:38:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/29 18:47:58 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -286,6 +286,12 @@ namespace ft
 							first++;
 						}
 					}
+
+				iterator	insert_unique(iterator hint, const value_type& v)
+				{
+
+				}
+
 
 				/* ######################## Public members functions ######################## */
 
