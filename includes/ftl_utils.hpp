@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 14:58:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/24 18:28:13 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/30 16:57:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,15 @@ namespace ft
 		struct unary_function
 		{
 			typedef Arg		argument_type;
+
+			typedef Result	result_type;
+		};
+
+	template <class FirstArg, class SecondArg, class Result>
+		struct binary_function
+		{
+			typedef FirstArg		first_argument_type;
+			typedef SecondArg		second_argument_type;
 
 			typedef Result	result_type;
 		};

@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/30 14:27:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/30 18:46:21 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ namespace ft
 	/* Red Black Tree implementation, based on libstdc++ implementation, and Introduction to Algorithm
 	 * Note that the code concerning the RBT implemtation is hugely commented : this is not a good practice,
 	 * but this project being a pure exercice it holds a potentially big educational potential.
-	 */
+	 * Note that this RBT doesn't allow for any duplicate and doesn't offer an interface to insert duplicate key.*/
 	template <class Key, class Value, class KeyOfValue, class KeyCompare = std::less<Value> >
 		class RBT
 		{
@@ -205,6 +205,11 @@ namespace ft
 
 				const_base_node_ptr	_M_root() const
 				{
+					return (static_cast<const_base_node_ptr>(_M_base._M_header._M_parent));
+				}
+
+				base_node_ptr	_M_root()
+				{
 					return (_M_base._M_header._M_parent);
 				}
 
@@ -227,6 +232,7 @@ namespace ft
 
 				~RBT()
 				{
+					clear();
 					/*std::cout << "Header Recap : " << &_M_base._M_header << "\n\n";
 					std::cout << "Number of nodes : " << _M_base._M_nbr_node << '\n';
 					std::cout << "_M_right address : " << _M_base._M_header._M_right << ", value : " << _S_value(_M_base._M_header._M_right).second << '\n';
@@ -294,6 +300,17 @@ namespace ft
 					return (_M_base._M_node_allocator.max_size());
 				}
 
+				/* ############################### Modifiers ################################ */
+
+				void	clear()
+				{
+					_M_erase(_M_begin());
+					_M_base._M_header._M_right = &_M_base._M_header;
+					_M_base._M_header._M_left = &_M_base._M_header;
+					_M_base._M_header._M_parent = NULL;
+					_M_base._M_nbr_node = 0;
+				}
+
 				ft::pair<iterator, bool>	insert_unique(const value_type& v)
 				{
 					return (_M_insert_unique_value(v));
@@ -318,6 +335,8 @@ namespace ft
 				{
 					_M_debug_print("", _M_root(), true);
 				}
+
+				/* ################################# Lookup ################################# */
 
 				iterator	lower_bound(const key_type& k)
 				{
@@ -437,6 +456,11 @@ namespace ft
 					return (end());
 				}
 
+				key_compare	key_comp() const
+				{
+					return (_M_base._M_key_cmp);
+				}
+
 				/* ######################## Public members functions ######################## */
 
 			private:
@@ -449,7 +473,13 @@ namespace ft
 
 				void	_M_erase(node_ptr x)
 				{
-					(void) x;
+					while (x != NULL)
+					{
+						_M_erase(_S_right(x));
+						node_ptr y = _S_left(x);
+						_M_destroy_node(x);
+						x = y;
+					}
 				}
 
 				iterator _M_insert(const bool insert_left, base_node_ptr p, const value_type& val)

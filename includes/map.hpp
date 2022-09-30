@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/21 13:10:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/30 14:27:43 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/30 18:41:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <stdexcept>
 
 #ifndef MAP_TEMPLATE_CLASS_HPP
 # define MAP_TEMPLATE_CLASS_HPP
@@ -53,18 +54,39 @@ namespace ft
 				typedef typename tree_type::reverse_iterator		reverse_iterator;
 				typedef typename tree_type::const_reverse_iterator	const_reverse_iterator;
 
+				class value_compare : public ft::binary_function<value_type, value_type, bool>
+				{
+					friend class map; // so that we can call the constructor from the map.
+
+					public:
+
+						typedef typename binary_function<value_type, value_type, bool>::result_type				result_type;
+						typedef typename binary_function<value_type, value_type, bool>::first_argument_type		first_argument_type;
+						typedef typename binary_function<value_type, value_type, bool>::second_argument_type	second_argument_type;
+
+						bool	operator()(const value_type& x, const value_type& y)
+						{
+							return (comp(x.first, y.first));
+						}
+
+					protected:
+
+						value_compare(key_compare comp) : comp(comp) {}
+
+						key_compare	comp;
+				};
+
 				/* ####################### Constructors & Destructor ######################## */
 
-				explicit	map(const key_compare& comp = key_compare())
-					: _M_tree(comp)
+				explicit	map(const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type())
+					: _M_tree(comp, alloc)
 				{}
 
 				template <class InputIt>
-					map(InputIt first, InputIt last, const key_compare& comp = key_compare())
-					: _M_tree(comp)
+					map(InputIt first, InputIt last, const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type())
+					: _M_tree(comp, alloc)
 				{
-					(void) first;
-					(void) last;
+					this->insert(first, last);
 				}
 
 				map(const map& other)
@@ -73,7 +95,28 @@ namespace ft
 				}
 
 				~map()
-				{}
+				{
+					clear();
+				}
+
+				/* ############################# Element Access ############################# */
+
+				mapped_type&	at(const key_type& k)
+				{
+					iterator	i = this->find(k);
+
+					if (i == end())
+						throw (std::out_of_range("map::at"));
+					return ((*i).second);
+				}
+
+				mapped_type&	operator[](const key_type& k)
+				{
+					iterator	i = this->insert(value_type(k, mapped_type())).first;
+					return ((*i).second);
+				}
+
+				/* ############################### Iterators ################################ */
 
 				iterator	begin()
 				{
@@ -115,6 +158,8 @@ namespace ft
 					return (_M_tree.rend());
 				}
 
+				/* ################################ Capacity ################################ */
+
 				bool	empty() const
 				{
 					return (_M_tree.empty());
@@ -128,6 +173,13 @@ namespace ft
 				size_type	max_size() const
 				{
 					return (_M_tree.max_size());
+				}
+
+				/* ############################### Modifiers ################################ */
+
+				void	clear()
+				{
+					_M_tree.clear();
 				}
 
 				ft::pair<iterator, bool>	insert(const value_type& value)
@@ -178,6 +230,21 @@ namespace ft
 				const_iterator	find(const key_type& k) const
 				{
 					return (_M_tree.find(k));
+				}
+
+				size_type	count(const key_type& k) const
+				{
+					return ((find(k) != end()) ? 1 : 0);
+				}
+
+				key_compare	key_comp() const
+				{
+					return (_M_tree.key_comp());
+				}
+
+				value_compare	value_comp() const
+				{
+					return (value_compare(_M_tree.key_comp()));
 				}
 
 				void	print() const
