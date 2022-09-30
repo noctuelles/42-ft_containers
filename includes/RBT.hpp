@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/29 18:47:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/30 14:27:16 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,26 +92,25 @@ namespace ft
 						size_type		_M_nbr_node;
 
 						RBT_Base(const allocator_type& alloc = allocator_type(), const key_compare& comp = key_compare())
-							: _M_node_allocator(alloc), _M_key_cmp(comp), _M_header(), _M_nbr_node()
-						{
-							_M_header._M_color = red;
-							_M_header._M_left = &_M_header;
-							_M_header._M_right = &_M_header;
-						}
+							: _M_node_allocator(alloc), _M_key_cmp(comp), _M_header(red, NULL, &_M_header, &_M_header), _M_nbr_node()
+						{}
 				};
-
-				// Return a const_reference to a value given a node x.
-				static const Value&	_S_value(const_node_ptr x)
-				{
-					return (x->_M_value);
-				}
 
 				static const Value&	_S_value(const_base_node_ptr x)
 				{
 					return (static_cast<const_node_ptr>(x)->_M_value);
 				}
 
-				// Return the key of a given node x.
+				static const key_type&	_S_key(const_base_node_ptr x)
+				{
+					return (KeyOfValue()(_S_value(x)));
+				}
+
+				static const Value&	_S_value(const_node_ptr x)
+				{
+					return (x->_M_value);
+				}
+
 				static const key_type&	_S_key(const_node_ptr x)
 				{
 					return (KeyOfValue()(_S_value(x)));
@@ -178,6 +177,12 @@ namespace ft
 					return (node);
 				}
 
+				void	_M_destroy_node(node_ptr x)
+				{
+					_M_base._M_node_allocator.destroy(&x->_M_value);
+					_M_base._M_node_allocator.deallocate(x, 1);
+				}
+
 				static node_ptr	_S_left(base_node_ptr x)
 				{
 					return (static_cast<node_ptr>(x->_M_left));
@@ -196,6 +201,11 @@ namespace ft
 				static const_node_ptr	_S_right(const_base_node_ptr x)
 				{
 					return (static_cast<const_node_ptr>(x->_M_right));
+				}
+
+				const_base_node_ptr	_M_root() const
+				{
+					return (_M_base._M_header._M_parent);
 				}
 
 			public:
@@ -217,12 +227,12 @@ namespace ft
 
 				~RBT()
 				{
-					std::cout << "Header Recap : " << &_M_base._M_header << "\n\n";
+					/*std::cout << "Header Recap : " << &_M_base._M_header << "\n\n";
 					std::cout << "Number of nodes : " << _M_base._M_nbr_node << '\n';
 					std::cout << "_M_right address : " << _M_base._M_header._M_right << ", value : " << _S_value(_M_base._M_header._M_right).second << '\n';
 					std::cout << "_M_left address : " << _M_base._M_header._M_left << ", value : " << _S_value(_M_base._M_header._M_left).second << '\n';
-					std::cout << "root : " << _M_base._M_header._M_parent << ", value : " << _S_value(_M_base._M_header._M_parent).second << '\n';
-					// Free every tree node.
+
+					std::cout << "root : " << _M_base._M_header._M_parent << ", value : " << _S_value(_M_base._M_header._M_parent).second << '\n';*/
 				}
 
 				/* ################################ Accesors ################################ */
@@ -267,9 +277,21 @@ namespace ft
 					return (const_reverse_iterator(begin()));
 				}
 
+				/* ################################ Capacity ################################ */
+
 				bool	empty() const
 				{
 					return (_M_base._M_nbr_node == 0);
+				}
+
+				size_type	size() const
+				{
+					return (_M_base._M_nbr_node);
+				}
+
+				size_type	max_size() const
+				{
+					return (_M_base._M_node_allocator.max_size());
 				}
 
 				ft::pair<iterator, bool>	insert_unique(const value_type& v)
@@ -289,9 +311,131 @@ namespace ft
 
 				iterator	insert_unique(iterator hint, const value_type& v)
 				{
-
+					_M_insert_unique_value(hint, v);
 				}
 
+				void	print() const
+				{
+					_M_debug_print("", _M_root(), true);
+				}
+
+				iterator	lower_bound(const key_type& k)
+				{
+					node_ptr	x = _M_begin();
+					node_ptr	y = _M_end(); // y is guarantee to be greater than k
+
+					while (x != NULL)
+					{
+						if (!_M_base._M_key_cmp(_S_key(x), k)) // >=
+						{
+							y = x;
+							x = _S_left(x);
+						}
+						else
+							x = _S_right(x);
+					}
+					return (iterator(y));
+				}
+
+				const_iterator	lower_bound(const key_type& k) const
+				{
+					const_node_ptr	x = _M_begin();
+					const_node_ptr	y = _M_end();
+
+					while (x != NULL)
+					{
+						if (!_M_base._M_key_cmp(_S_key(x), k)) // >=
+						{
+							y = x;
+							x = _S_left(x);
+						}
+						else
+							x = _S_right(x);
+					}
+					return (const_iterator(y));
+				}
+
+				iterator	upper_bound(const key_type& k)
+				{
+					node_ptr	x = _M_begin();
+					node_ptr	y = _M_end();
+
+					while (x != NULL)
+					{
+						if (_M_base._M_key_cmp(k, _S_key(x)))
+						{
+							y = x;
+							x = _S_left(x);
+						}
+						else
+							x = _S_right(x);
+					}
+					return (iterator(y));
+				}
+
+				const_iterator	upper_bound(const key_type& k) const
+				{
+					const_node_ptr	x = _M_begin();
+					const_node_ptr	y = _M_end();
+
+					while (x != NULL)
+					{
+						if (_M_base._M_key_cmp(k, _S_key(x)))
+						{
+							y = x;
+							x = _S_left(x);
+						}
+						else
+							x = _S_right(x);
+					}
+					return (const_iterator(y));
+				}
+
+				ft::pair<iterator, iterator>	equal_range(const key_type& k)
+				{
+					return (ft::make_pair(lower_bound(k), upper_bound(k)));
+				}
+
+				ft::pair<const_iterator, const_iterator>	equal_range(const key_type& k) const
+				{
+					return (ft::make_pair(lower_bound(k), upper_bound(k)));
+				}
+
+				iterator	find(const key_type& k)
+				{
+					node_ptr	x = _M_begin();
+					node_ptr	y = NULL;
+
+					while (x != NULL)
+					{
+						y = x;
+						if (!_M_base._M_key_cmp(k, _S_key(x)) && !_M_base._M_key_cmp(_S_key(x), k))
+							return (iterator(y));
+						if (_M_base._M_key_cmp(k, _S_key(x)))
+							x = _S_left(x);
+						else
+							x = _S_right(x);
+					}
+					return (end());
+				}
+
+				const_iterator	find(const key_type& k) const
+				{
+					const_node_ptr	x = _M_begin();
+					const_node_ptr	y = NULL;
+
+					while (x != NULL)
+					{
+						y = x;
+						if (!_M_base._M_key_cmp(k, _S_key(x)) && !_M_base._M_key_cmp(_S_key(x), k))
+							return (iterator(y));
+						if (_M_base._M_key_cmp(k, _S_key(x)))
+							x = _S_left(x);
+						else
+							x = _S_right(x);
+					}
+					return (end());
+				}
 
 				/* ######################## Public members functions ######################## */
 
@@ -303,7 +447,10 @@ namespace ft
 
 				/* ########################### Private structure ############################ */
 
-
+				void	_M_erase(node_ptr x)
+				{
+					(void) x;
+				}
 
 				iterator _M_insert(const bool insert_left, base_node_ptr p, const value_type& val)
 				{
@@ -321,32 +468,50 @@ namespace ft
 				{
 					node_ptr	x = _M_begin(); // root
 					node_ptr	y = _M_end();   // header
+					bool		comp = true;
 
 					while (x != NULL)
 					{
 						y = x;
-						if (KeyOfValue()(v) == _S_key(x))
+						if (!_M_base._M_key_cmp(KeyOfValue()(v), _S_key(x)) && !_M_base._M_key_cmp(_S_key(x), KeyOfValue()(v)))
 							return (ft::pair<iterator, bool>(iterator(x), false));
-						if (_M_base._M_key_cmp(KeyOfValue()(v), _S_key(x))) // if v < x.key
-							x = _S_left(x);
-						else
-							x = _S_right(x);
+						comp = _M_base._M_key_cmp(KeyOfValue()(v), _S_key(x));
+						(comp) ? x = _S_left(x) : x = _S_right(x);
 					}
-					if (y == _M_end() || _M_base._M_key_cmp(KeyOfValue()(v), _S_key(y)))
+					if (comp)
+					{
+						std::cout << "Insertion of key " << KeyOfValue()(v) << " left.\n";
 						return (ft::pair<iterator, bool>(_M_insert(true, y, v), true));
+					}
 					else
+					{
+						std::cout << "Insertion of key " << KeyOfValue()(v) << " right.\n";
 						return (ft::pair<iterator, bool>(_M_insert(false, y, v), true));
+					}
 				}
 
-				void	_m_debug_print(const std::string& prefix, node_ptr x, bool isLeft)
+				iterator	_M_insert_unique_value(iterator hint, const value_type& v)
 				{
-					if (x != NULL)
+					if (hint == end())
+					{
+						if (_M_base._M_key_cmp(_S_key(_M_base._M_header._M_right), KeyOfValue()(v))) // if the rightmost node key is lower than v key.
+							return (_M_insert(false, _M_base._M_header._M_right, v)); // the new node'll be inserted at the end.
+						else
+							return (insert_unique(v).first); // the user gave us a bad hint: go though normal insertion routine.
+					}
+				}
+
+				void	_M_debug_print(const std::string& prefix, const_base_node_ptr x, bool isLeft) const
+				{
+					if (x)
 					{
 						std::cout << prefix;
 						std::cout << (isLeft ? "├──" : "└──");
-						std::cout << x->value << std::endl;
-						_m_debug_print(prefix + (isLeft ? "│   " : "    "), x->left, true);
-						_m_debug_print(prefix + (isLeft ? "│   " : "    "), x->right, false);
+						std::cout << _S_key(x) << std::endl;
+						x = _S_left(x);
+						_M_debug_print(prefix + (isLeft ? "│   " : "    "), x, true);
+						x = _S_right(x);
+						_M_debug_print(prefix + (isLeft ? "│   " : "    "), x, false);
 					}
 				}
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 17:47:19 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/29 16:00:29 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/30 13:25:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,13 +134,19 @@ namespace ft
 				header._M_right = x;
 			}
 			else if (p == header._M_left) // if the parent is the leftmost node
+			{
+				//std::cout << "Leftmost node has been updated\n";
 				header._M_left = x;
+			}
 		}
 		else
 		{
 			p->_M_right = x;
 			if (p == header._M_right) // if the parent is the rightmost node
+			{
+				//std::cout << "Rightmost node has been updated\n";
 				header._M_right = x;
+			}
 		}
 		//if (x != root)
 		//	rbt_insert_balance(x, header._M_parent);

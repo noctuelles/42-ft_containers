@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/21 13:10:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/29 18:40:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/30 14:27:43 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ namespace ft
 			public :
 
 				/* ################################ Typedefs ################################ */
-
 
 				typedef Key							key_type;
 				typedef Compare						key_compare;
@@ -116,6 +115,21 @@ namespace ft
 					return (_M_tree.rend());
 				}
 
+				bool	empty() const
+				{
+					return (_M_tree.empty());
+				}
+
+				size_t	size() const
+				{
+					return (_M_tree.size());
+				}
+
+				size_type	max_size() const
+				{
+					return (_M_tree.max_size());
+				}
+
 				ft::pair<iterator, bool>	insert(const value_type& value)
 				{
 					return (_M_tree.insert_unique(value));
@@ -126,6 +140,50 @@ namespace ft
 					{
 						_M_tree.insert_unique(first, last);
 					}
+
+				iterator	insert(iterator hint, const value_type& v)
+				{
+					_M_tree.insert_unique(hint, v);
+				}
+
+				// Returns an iterator pointing to the first element that is not less than key.
+				iterator	lower_bound(const key_type& k)
+				{
+					return (_M_tree.lower_bound(k));
+				}
+
+				// Returns an iterator pointing to the first element that is not less than key.
+				const_iterator	lower_bound(const key_type& k) const
+				{
+					return (_M_tree.lower_bound(k));
+				}
+
+				// Returns an iterator pointing to the first element that is greater than key.
+				iterator	upper_bound(const key_type& k)
+				{
+					return (_M_tree.upper_bound(k));
+				}
+
+				// Returns an iterator pointing to the first element that is greater than key.
+				const_iterator	upper_bound(const key_type& k) const
+				{
+					return (_M_tree.upper_bound(k));
+				}
+
+				iterator	find(const key_type& k)
+				{
+					return (_M_tree.find(k));
+				}
+
+				const_iterator	find(const key_type& k) const
+				{
+					return (_M_tree.find(k));
+				}
+
+				void	print() const
+				{
+					_M_tree.print();
+				}
 
 			private:
 

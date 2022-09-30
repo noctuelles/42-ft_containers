@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/23 10:11:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/28 18:32:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/09/30 13:43:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,10 @@ namespace ft
 		base_ptr		_M_parent;
 		base_ptr		_M_left;
 		base_ptr		_M_right;
+
+		RBTNode_Base(RBTNode_Color color = black, base_ptr parent = NULL, base_ptr left = NULL, base_ptr right = NULL)
+			: _M_color(color), _M_parent(parent), _M_left(left), _M_right(right)
+		{}
 
 		// These functions are static so that they're callable from anywhere
 		// without declaring any RBTNode_Base type.
