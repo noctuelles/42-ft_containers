@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/30 18:46:21 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/01 15:38:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,14 @@
 #include "pair.hpp"
 #include "iterators.hpp"
 #include "RBTNode.hpp"
+#include "algorithm.hpp"
 #include "ftl_utils.hpp"
+#include <algorithm>
 #include <cstddef>
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <list>
 #include <memory>
 
 namespace ft
@@ -94,6 +97,7 @@ namespace ft
 						RBT_Base(const allocator_type& alloc = allocator_type(), const key_compare& comp = key_compare())
 							: _M_node_allocator(alloc), _M_key_cmp(comp), _M_header(red, NULL, &_M_header, &_M_header), _M_nbr_node()
 						{}
+
 				};
 
 				static const Value&	_S_value(const_base_node_ptr x)
@@ -203,14 +207,34 @@ namespace ft
 					return (static_cast<const_node_ptr>(x->_M_right));
 				}
 
+				base_node_ptr&	_M_root()
+				{
+					return (_M_base._M_header._M_parent);
+				}
+
 				const_base_node_ptr	_M_root() const
 				{
 					return (static_cast<const_base_node_ptr>(_M_base._M_header._M_parent));
 				}
 
-				base_node_ptr	_M_root()
+				const_base_node_ptr	_M_rightmost() const
 				{
-					return (_M_base._M_header._M_parent);
+					return (static_cast<const_base_node_ptr>(_M_base._M_header._M_right));
+				}
+
+				base_node_ptr&	_M_rightmost()
+				{
+					return (_M_base._M_header._M_right);
+				}
+
+				const_base_node_ptr	_M_leftmost() const
+				{
+					return (static_cast<const_base_node_ptr>(_M_base._M_header._M_left));
+				}
+
+				base_node_ptr&	_M_leftmost()
+				{
+					return (_M_base._M_header._M_left);
 				}
 
 			public:
@@ -228,7 +252,9 @@ namespace ft
 				// Copy constructor, need deep copy of the tree!
 				RBT(const RBT<Key, Value, KeyOfValue, KeyCompare>& other)
 					: _M_base(other._M_base._M_node_allocator, other._M_base._M_key_cmp)
-				{}
+				{
+					this->insert_unique(other.begin(), other.clear());
+				}
 
 				~RBT()
 				{
@@ -239,6 +265,21 @@ namespace ft
 					std::cout << "_M_left address : " << _M_base._M_header._M_left << ", value : " << _S_value(_M_base._M_header._M_left).second << '\n';
 
 					std::cout << "root : " << _M_base._M_header._M_parent << ", value : " << _S_value(_M_base._M_header._M_parent).second << '\n';*/
+				}
+
+				allocator_type	get_allocator() const
+				{
+					return (_M_base._M_node_allocator);
+				}
+
+				RBT&	operator=(const RBT& other)
+				{
+					if (this != &other)
+					{
+						clear();
+						this->insert_unique(other.begin(), other.end());
+					}
+					return (*this);
 				}
 
 				/* ################################ Accesors ################################ */
@@ -461,6 +502,49 @@ namespace ft
 					return (_M_base._M_key_cmp);
 				}
 
+				void	swap(RBT& other)
+				{
+					if (_M_root() == NULL)
+					{
+						if (other._M_root() != NULL)
+						{
+							_M_root() = other._M_root();
+							_M_leftmost() = other._M_leftmost();
+							_M_rightmost() = other._M_rightmost();
+							_M_root()->_M_parent = _M_end();
+
+							other._M_root() = NULL;
+							other._M_leftmost() = other._M_end();
+							other._M_rightmost() = other._M_end();
+						}
+					}
+					else if (other._M_root() == NULL)
+					{
+						other._M_root() = _M_root();
+						other._M_leftmost() = _M_leftmost();
+						other._M_rightmost() = _M_rightmost();
+						other._M_root()->_M_parent = other._M_end();
+
+						_M_root() = NULL;
+						_M_leftmost() = _M_end();
+						_M_rightmost() = _M_end();
+					}
+					else
+					{
+						std::swap(_M_root(), other._M_root());
+						std::swap(_M_leftmost(), other._M_leftmost());
+						std::swap(_M_rightmost(), other._M_rightmost());
+
+						// update the header in respective tree.
+						_M_root()->_M_parent = _M_end();
+						other._M_root()->_M_parent = other._M_end();
+					}
+
+					std::swap(_M_base._M_nbr_node, other._M_base._M_nbr_node);
+					std::swap(_M_base._M_key_cmp, other._M_base._M_key_cmp);
+					std::swap(_M_base._M_node_allocator, other._M_base._M_node_allocator);
+				}
+
 				/* ######################## Public members functions ######################## */
 
 			private:
@@ -544,8 +628,43 @@ namespace ft
 						_M_debug_print(prefix + (isLeft ? "│   " : "    "), x, false);
 					}
 				}
-
 		};
+
+	template <class Key, class Value, class KeyOfValue, class Compare>
+		inline bool	operator==(const RBT<Key, Value, KeyOfValue, Compare>& x, const RBT<Key, Value, KeyOfValue, Compare>& y)
+		{
+			return (x.size() == y.size() && std::equal(x.begin(), x.end(), y.begin()));
+		}
+
+	template <class Key, class Value, class KeyOfValue, class Compare>
+		inline bool	operator!=(const RBT<Key, Value, KeyOfValue, Compare>& x, const RBT<Key, Value, KeyOfValue, Compare>& y)
+		{
+			return !(x == y);
+		}
+
+	template <class Key, class Value, class KeyOfValue, class Compare>
+		inline bool	operator<(const RBT<Key, Value, KeyOfValue, Compare>& x, const RBT<Key, Value, KeyOfValue, Compare>& y)
+		{
+			return (ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end()));
+		}
+
+	template <class Key, class Value, class KeyOfValue, class Compare>
+		inline bool	operator<=(const RBT<Key, Value, KeyOfValue, Compare>& x, const RBT<Key, Value, KeyOfValue, Compare>& y)
+		{
+		 return !(y < x);
+		}
+
+	template <class Key, class Value, class KeyOfValue, class Compare>
+		inline bool	operator>(const RBT<Key, Value, KeyOfValue, Compare>& x, const RBT<Key, Value, KeyOfValue, Compare>& y)
+		{
+			return (y < x);
+		}
+
+	template <class Key, class Value, class KeyOfValue, class Compare>
+		inline bool	operator>=(const RBT<Key, Value, KeyOfValue, Compare>& x, const RBT<Key, Value, KeyOfValue, Compare>& y)
+		{
+			return !(x < y);
+		}
 }
 
 #endif

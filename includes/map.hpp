@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/21 13:10:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/30 18:41:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/01 15:50:02 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,12 +91,18 @@ namespace ft
 
 				map(const map& other)
 				{
-					(void) other;
+					insert(other.begin(), other.end());
 				}
 
 				~map()
 				{
 					clear();
+				}
+
+				map&	operator=(map& other)
+				{
+					_M_tree.operator=(other._M_tree);
+					return (*this);
 				}
 
 				/* ############################# Element Access ############################# */
@@ -247,16 +253,72 @@ namespace ft
 					return (value_compare(_M_tree.key_comp()));
 				}
 
+				void	swap(map& other)
+				{
+					_M_tree.swap(other._M_tree);
+				}
+
 				void	print() const
 				{
 					_M_tree.print();
 				}
+
+				template <class _Key, class _Value, class _Compare>
+					friend inline bool	operator==(const map<_Key, _Value, _Compare>& x, const map<_Key, _Value, _Compare>& y);
+
+				template <class _Key, class _Value, class _Compare>
+					friend inline bool	operator<(const map<_Key, _Value, _Compare>& x, const map<_Key, _Value, _Compare>& y);
 
 			private:
 
 				tree_type	_M_tree;
 
 		};
+
+	template <class Key, class Value, class Compare>
+		inline bool	operator==(const map<Key, Value, Compare>& x, const map<Key, Value, Compare>& y)
+		{
+			return (x._M_tree == y._M_tree);
+		}
+
+	template <class Key, class Value, class Compare>
+		inline bool	operator!=(const map<Key, Value, Compare>& x, const map<Key, Value, Compare>& y)
+		{
+			return !(x == y);
+		}
+
+	template <class Key, class Value, class Compare>
+		inline bool	operator<(const map<Key, Value, Compare>& x, const map<Key, Value, Compare>& y)
+		{
+			return (x._M_tree < y._M_tree);
+		}
+
+	template <class Key, class Value, class Compare>
+		inline bool	operator<=(const map<Key, Value, Compare>& x, const map<Key, Value, Compare>& y)
+		{
+			return !(y < x);
+		}
+
+	template <class Key, class Value, class Compare>
+		inline bool	operator>(const map<Key, Value, Compare>& x, const map<Key, Value, Compare>& y)
+		{
+			return (y < x);
+		}
+
+	template <class Key, class Value, class Compare>
+		inline bool	operator>=(const map<Key, Value, Compare>& x, const map<Key, Value, Compare>& y)
+		{
+			return !(x < y);
+		}
+}
+
+namespace std
+{
+	template <class Key, class Value, class Compare>
+			void	swap(ft::map<Key, Value, Compare>& lhs, ft::map<Key, Value, Compare>& rhs)
+	{
+		lhs.swap(rhs);
+	}
 }
 
 #endif
