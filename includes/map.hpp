@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/21 13:10:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/01 15:50:02 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/02 17:39:48 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ namespace ft
 
 				~map()
 				{
-					clear();
+					//clear();
 				}
 
 				map&	operator=(map& other)
@@ -202,6 +202,22 @@ namespace ft
 				iterator	insert(iterator hint, const value_type& v)
 				{
 					_M_tree.insert_unique(hint, v);
+				}
+
+				void	erase(iterator pos)
+				{
+					_M_tree.erase_unique(pos);
+				}
+
+				void	erase(iterator first, iterator last)
+				{
+					_M_tree.erase_unique(first, last);
+				}
+
+				size_type	erase(const key_type& key)
+				{
+					_M_tree.erase_unique(key);
+					return (1);
 				}
 
 				// Returns an iterator pointing to the first element that is not less than key.

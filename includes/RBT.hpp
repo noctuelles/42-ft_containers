@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/01 15:38:22 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/02 17:40:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ namespace ft
 									RBTNode_Base* x,
 									RBTNode_Base* p,
 									RBTNode_Base& header);
+				void	rbt_delete_node(RBTNode_Base* z, RBTNode_Base& header);
 
 	/* Red Black Tree implementation, based on libstdc++ implementation, and Introduction to Algorithm
 	 * Note that the code concerning the RBT implemtation is hugely commented : this is not a good practice,
@@ -258,13 +259,13 @@ namespace ft
 
 				~RBT()
 				{
-					clear();
-					/*std::cout << "Header Recap : " << &_M_base._M_header << "\n\n";
+					std::cout << "Header Recap : " << &_M_base._M_header << "\n\n";
 					std::cout << "Number of nodes : " << _M_base._M_nbr_node << '\n';
 					std::cout << "_M_right address : " << _M_base._M_header._M_right << ", value : " << _S_value(_M_base._M_header._M_right).second << '\n';
 					std::cout << "_M_left address : " << _M_base._M_header._M_left << ", value : " << _S_value(_M_base._M_header._M_left).second << '\n';
 
-					std::cout << "root : " << _M_base._M_header._M_parent << ", value : " << _S_value(_M_base._M_header._M_parent).second << '\n';*/
+					if (_M_base._M_header._M_parent)
+						std::cout << "root : " << _M_base._M_header._M_parent << ", value : " << _S_value(_M_base._M_header._M_parent).second << '\n';
 				}
 
 				allocator_type	get_allocator() const
@@ -370,6 +371,30 @@ namespace ft
 				iterator	insert_unique(iterator hint, const value_type& v)
 				{
 					_M_insert_unique_value(hint, v);
+				}
+
+				void	erase_unique(iterator pos)
+				{
+					rbt_delete_node(pos._M_node, _M_base._M_header);
+					_M_base._M_nbr_node--;
+				}
+
+				void	erase_unique(iterator first, iterator end)
+				{
+					if (first == begin() && end == this->end())
+						return (clear());
+					while (first != end)
+					{
+						erase_unique(first);
+						first++;
+					}
+				}
+
+				void	erase_unique(const key_type& key)
+				{
+					iterator	i = this->find(key);
+					if (i != end())
+						this->erase_unique(i);
 				}
 
 				void	print() const

@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 17:47:19 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/30 13:25:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/02 18:00:07 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,22 +134,74 @@ namespace ft
 				header._M_right = x;
 			}
 			else if (p == header._M_left) // if the parent is the leftmost node
-			{
-				//std::cout << "Leftmost node has been updated\n";
 				header._M_left = x;
-			}
 		}
 		else
 		{
 			p->_M_right = x;
 			if (p == header._M_right) // if the parent is the rightmost node
-			{
-				//std::cout << "Rightmost node has been updated\n";
 				header._M_right = x;
-			}
 		}
 		//if (x != root)
 		//	rbt_insert_balance(x, header._M_parent);
 		root->_M_color = black;
+	}
+
+	static void	rbt_transplant(RBTNode_Base* u, RBTNode_Base* v, RBTNode_Base& header)
+	{
+		RBTNode_Base*&	root = header._M_parent;
+
+		if (u->_M_parent == &header)
+			root = v;
+		else if (u == u->_M_parent->_M_left)
+			u->_M_parent->_M_left = v;
+		else
+			u->_M_parent->_M_right = v;
+		if (v != NULL)
+			v->_M_parent = u->_M_parent;
+	}
+
+	void	rbt_delete_node(RBTNode_Base* z, RBTNode_Base& header)
+	{
+		if (z->_M_left == NULL)
+		{
+			bool	update_leftmost = (z == header._M_left);
+
+			rbt_transplant(z, z->_M_right, header);
+			if (update_leftmost)
+			{
+				if (z->_M_right)
+					header._M_left = z->_M_right;
+				else
+					header._M_left = z->_M_parent;
+			}
+		}
+		else if (z->_M_right == NULL) // rightmost node..
+		{
+			bool update_rightmost = (z == header._M_right);
+
+			rbt_transplant(z, z->_M_left, header);
+			if (update_rightmost)
+			{
+				if (z->_M_left)
+					header._M_right = z->_M_left;
+				else
+					header._M_right = z->_M_parent;
+			}
+		}
+		else // rightmost or leftmost node cannot have
+		{
+			RBTNode_Base*	y = RBTNode_Base::minimum(z->_M_right);
+
+			if (y->_M_parent != z)
+			{
+				rbt_transplant(y, y->_M_right, header);
+				y->_M_right = z->_M_right;
+				y->_M_right->_M_parent = y;
+			}
+			rbt_transplant(z, y, header);
+			y->_M_left = z->_M_left;
+			y->_M_left->_M_parent = y;
+		}
 	}
 }
