@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/25 14:20:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/30 13:58:41 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/03 12:04:11 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -546,12 +546,12 @@ namespace ft
 					: _M_node(node) {}
 				~rbt_iterator() {}
 
-				reference	operator*()
+				reference	operator*() const
 				{
 					return (static_cast<link_type>(_M_node)->_M_value);
 				}
 
-				pointer	operator->()
+				pointer	operator->() const
 				{
 					return(&static_cast<link_type>(_M_node)->_M_value);
 				}
@@ -623,14 +623,14 @@ namespace ft
 					: _M_node(it._M_node) {}
 				~const_rbt_iterator() {}
 
-				reference	operator*()
+				reference	operator*() const
 				{
 					return (static_cast<link_type>(_M_node)->_M_value);
 				}
 
-				pointer	operator->()
+				pointer	operator->() const
 				{
-					return(&operator*());
+					return(&static_cast<link_type>(_M_node)->_M_value);
 				}
 
 				const_rbt_iterator&	operator++()

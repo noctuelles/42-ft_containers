@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 17:47:19 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/02 18:00:07 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/03 11:47:57 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,26 +165,32 @@ namespace ft
 	{
 		if (z->_M_left == NULL)
 		{
-			bool	update_leftmost = (z == header._M_left);
-
 			rbt_transplant(z, z->_M_right, header);
-			if (update_leftmost)
+			if (z == header._M_left)
 			{
 				if (z->_M_right)
-					header._M_left = z->_M_right;
+				{
+					if (z->_M_right->_M_left)
+						header._M_left = RBTNode_Base::minimum(z->_M_right->_M_left);
+					else
+						header._M_left = z->_M_right;
+				}
 				else
 					header._M_left = z->_M_parent;
 			}
 		}
 		else if (z->_M_right == NULL) // rightmost node..
 		{
-			bool update_rightmost = (z == header._M_right);
-
 			rbt_transplant(z, z->_M_left, header);
-			if (update_rightmost)
+			if (z == header._M_right)
 			{
 				if (z->_M_left)
-					header._M_right = z->_M_left;
+				{
+					if (z->_M_left->_M_right)
+						header._M_right = RBTNode_Base::maximum(z->_M_left->_M_right);
+					else
+						header._M_right = z->_M_left;
+				}
 				else
 					header._M_right = z->_M_parent;
 			}
@@ -203,5 +209,7 @@ namespace ft
 			y->_M_left = z->_M_left;
 			y->_M_left->_M_parent = y;
 		}
+		if (header._M_parent == NULL)
+			header._M_left = &header, header._M_right = &header;
 	}
 }

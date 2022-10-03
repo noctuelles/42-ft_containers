@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/19 18:46:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/19 19:49:34 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/03 15:13:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,10 +74,52 @@ namespace ft
 					c.pop_back();
 				}
 
+				template <class _T, class _Container>
+					friend inline bool	operator==(const stack<_T, _Container>& lhs, const stack<_T, _Container>& rhs);
+
+				template <class _T, class _Container>
+					friend inline bool	operator<(const stack<_T, _Container>& lhs, const stack<_T, _Container>& rhs);
+
 			private:
 
 				Container	c;
 		};
+
+	template <class T, class Container>
+		inline bool	operator==(const stack<T, Container>& lhs, const stack<T, Container>& rhs)
+		{
+			return (lhs.c == rhs.c);
+		}
+
+	template <class T, class Container>
+		inline bool	operator!=(const stack<T, Container>& lhs, const stack<T, Container>& rhs)
+		{
+			return !(lhs == rhs);
+		}
+
+	template <class T, class Container>
+		inline bool	operator<(const stack<T, Container>& lhs, const stack<T, Container>& rhs)
+		{
+			return (ft::lexicographical_compare(lhs.c.begin(), lhs.c.end(), rhs.c.begin(), rhs.c.end()));
+		}
+
+	template <class T, class Container>
+		inline bool	operator<=(const stack<T, Container>& lhs, const stack<T, Container>& rhs)
+		{
+			return !(rhs < lhs);
+		}
+
+	template <class T, class Container>
+		inline bool	operator>(const stack<T, Container>& lhs, const stack<T, Container>& rhs)
+		{
+			return (rhs < lhs);
+		}
+
+	template <class T, class Container>
+		inline bool	operator>=(const stack<T, Container>& lhs, const stack<T, Container>& rhs)
+		{
+			return !(lhs < rhs);
+		}
 }
 
 #endif

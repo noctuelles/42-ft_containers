@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 10:31:31 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/01 15:54:39 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/03 15:16:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -508,7 +508,7 @@ namespace ft
 	template <class T>
 		bool	operator>(const ft::vector<T>& lhs, const ft::vector<T>& rhs)
 		{
-			return !(rhs < lhs);
+			return (rhs < lhs);
 		}
 
 	template <class T>
@@ -518,7 +518,7 @@ namespace ft
 		}
 }
 
-namespace std
+namespace ft
 {
 	template <class T>
 		void	swap(ft::vector<T> lhs, ft::vector<T> rhs)

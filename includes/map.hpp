@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/21 13:10:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/02 17:39:48 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/03 14:19:32 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ namespace ft
 {
 	template <class Key,
 			 	class Value,
-				class Compare = std::less<Key>>
+				class Compare = std::less<Key> >
 		class map
 		{
 			public :
@@ -96,7 +96,6 @@ namespace ft
 
 				~map()
 				{
-					//clear();
 				}
 
 				map&	operator=(map& other)
@@ -120,6 +119,11 @@ namespace ft
 				{
 					iterator	i = this->insert(value_type(k, mapped_type())).first;
 					return ((*i).second);
+				}
+
+				allocator_type	get_allocator() const
+				{
+					return (_M_tree.get_allocator());
 				}
 
 				/* ############################### Iterators ################################ */
@@ -201,7 +205,7 @@ namespace ft
 
 				iterator	insert(iterator hint, const value_type& v)
 				{
-					_M_tree.insert_unique(hint, v);
+					return (_M_tree.insert_unique(hint, v));
 				}
 
 				void	erase(iterator pos)
@@ -242,6 +246,16 @@ namespace ft
 				const_iterator	upper_bound(const key_type& k) const
 				{
 					return (_M_tree.upper_bound(k));
+				}
+
+				ft::pair<iterator, iterator>	equal_range(const key_type& k)
+				{
+					return (_M_tree.equal_range(k));
+				}
+
+				ft::pair<const_iterator, const_iterator>	equal_range(const key_type& k) const
+				{
+					return (_M_tree.equal_range(k));
 				}
 
 				iterator	find(const key_type& k)

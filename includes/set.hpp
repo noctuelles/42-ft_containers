@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/30 17:59:36 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/30 18:07:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/03 14:39:01 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ namespace ft
 {
 
 	template <class Key,
-			 class Compare = std::less<Key>>
+			 class Compare = std::less<Key> >
 		class set
 		{
 			public:
@@ -57,7 +57,6 @@ namespace ft
 						{
 							return (comp(x, y));
 						}
-
 					protected:
 
 						value_compare(key_compare comp) : comp(comp) {}
@@ -65,7 +64,264 @@ namespace ft
 						key_compare	comp;
 				};
 
+				explicit	set(const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type())
+					: _M_tree(comp, alloc)
+				{}
+
+				template <class InputIt>
+					set(InputIt first, InputIt last, const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type())
+					: _M_tree(comp, alloc)
+				{
+					this->insert(first, last);
+				}
+
+				set(const set& other)
+				{
+					insert(other.begin(), other.end());
+				}
+
+				~set()
+				{}
+
+				set&	operator=(set& other)
+				{
+					_M_tree.operator=(other._M_tree);
+					return (*this);
+				}
+
+				/* ############################# Element Access ############################# */
+
+				key_type&	at(const key_type& k)
+				{
+					iterator	i = this->find(k);
+
+					if (i == end())
+						throw (std::out_of_range("set::at"));
+					return ((*i).second);
+				}
+
+				key_type&	operator[](const key_type& k)
+				{
+					iterator	i = this->insert(value_type(k, key_type())).first;
+					return ((*i).second);
+				}
+
+				allocator_type	get_allocator() const
+				{
+					return (_M_tree.get_allocator());
+				}
+
+				/* ############################### Iterators ################################ */
+
+				iterator	begin()
+				{
+					return (_M_tree.begin());
+				}
+
+				const_iterator	begin() const
+				{
+					return (_M_tree.begin());
+				}
+
+				iterator	end()
+				{
+					return (_M_tree.end());
+				}
+
+				const_iterator	end() const
+				{
+					return (_M_tree.end());
+				}
+
+				reverse_iterator	rbegin()
+				{
+					return (_M_tree.rbegin());
+				}
+
+				const_reverse_iterator	rbegin() const
+				{
+					return (_M_tree.rbegin());
+				}
+
+				reverse_iterator	rend()
+				{
+					return (_M_tree.rend());
+				}
+
+				const_reverse_iterator	rend() const
+				{
+					return (_M_tree.rend());
+				}
+
+				/* ################################ Capacity ################################ */
+
+				bool	empty() const
+				{
+					return (_M_tree.empty());
+				}
+
+				size_t	size() const
+				{
+					return (_M_tree.size());
+				}
+
+				size_type	max_size() const
+				{
+					return (_M_tree.max_size());
+				}
+
+				/* ############################### Modifiers ################################ */
+
+				void	clear()
+				{
+					_M_tree.clear();
+				}
+
+				ft::pair<iterator, bool>	insert(const value_type& value)
+				{
+					return (_M_tree.insert_unique(value));
+				}
+
+				template <class InputIt>
+					void	insert(InputIt first, InputIt last)
+					{
+						_M_tree.insert_unique(first, last);
+					}
+
+				iterator	insert(iterator hint, const value_type& v)
+				{
+					return (_M_tree.insert_unique(hint, v));
+				}
+
+				void	erase(iterator pos)
+				{
+					_M_tree.erase_unique(pos);
+				}
+
+				void	erase(iterator first, iterator last)
+				{
+					_M_tree.erase_unique(first, last);
+				}
+
+				size_type	erase(const key_type& key)
+				{
+					_M_tree.erase_unique(key);
+					return (1);
+				}
+
+				// Returns an iterator pointing to the first element that is not less than key.
+				iterator	lower_bound(const key_type& k)
+				{
+					return (_M_tree.lower_bound(k));
+				}
+
+				// Returns an iterator pointing to the first element that is not less than key.
+				const_iterator	lower_bound(const key_type& k) const
+				{
+					return (_M_tree.lower_bound(k));
+				}
+
+				// Returns an iterator pointing to the first element that is greater than key.
+				iterator	upper_bound(const key_type& k)
+				{
+					return (_M_tree.upper_bound(k));
+				}
+
+				// Returns an iterator pointing to the first element that is greater than key.
+				const_iterator	upper_bound(const key_type& k) const
+				{
+					return (_M_tree.upper_bound(k));
+				}
+
+				ft::pair<iterator, iterator>	equal_range(const key_type& k)
+				{
+					return (_M_tree.equal_range(k));
+				}
+
+				ft::pair<const_iterator, const_iterator>	equal_range(const key_type& k) const
+				{
+					return (_M_tree.equal_range(k));
+				}
+
+				iterator	find(const key_type& k)
+				{
+					return (_M_tree.find(k));
+				}
+
+				const_iterator	find(const key_type& k) const
+				{
+					return (_M_tree.find(k));
+				}
+
+				size_type	count(const key_type& k) const
+				{
+					return ((find(k) != end()) ? 1 : 0);
+				}
+
+				key_compare	key_comp() const
+				{
+					return (_M_tree.key_comp());
+				}
+
+				value_compare	value_comp() const
+				{
+					return (value_compare(_M_tree.key_comp()));
+				}
+
+				void	swap(set& other)
+				{
+					_M_tree.swap(other._M_tree);
+				}
+
+				void	print() const
+				{
+					_M_tree.print();
+				}
+
+				template <class _Key, class _Compare>
+					friend inline bool	operator==(const set<_Key, _Compare>& x, const set<_Key, _Compare>& y);
+
+				template <class _Key, class _Compare>
+					friend inline bool	operator<(const set<_Key, _Compare>& x, const set<_Key, _Compare>& y);
+
 			private:
 
+				tree_type	_M_tree;
 		};
+
+	template <class Key, class Compare>
+		inline bool	operator==(const set<Key, Compare>& x, const set<Key, Compare>& y)
+		{
+			return (x._M_tree == y._M_tree);
+		}
+
+	template <class Key, class Compare>
+		inline bool	operator!=(const set<Key, Compare>& x, const set<Key, Compare>& y)
+		{
+			return !(x == y);
+		}
+
+	template <class Key,  class Compare>
+		inline bool	operator<(const set<Key, Compare>& x, const set<Key, Compare>& y)
+		{
+			return (x._M_tree < y._M_tree);
+		}
+
+	template <class Key, class Compare>
+		inline bool	operator<=(const set<Key, Compare>& x, const set<Key, Compare>& y)
+		{
+			return !(y < x);
+		}
+
+	template <class Key, class Compare>
+		inline bool	operator>(const set<Key, Compare>& x, const set<Key, Compare>& y)
+		{
+			return (y < x);
+		}
+
+	template <class Key, class Compare>
+		inline bool	operator>=(const set<Key, Compare>& x, const set<Key, Compare>& y)
+		{
+			return !(x < y);
+		}
 }
