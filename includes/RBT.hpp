@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/03 15:54:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/03 16:02:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -666,11 +666,15 @@ namespace ft
 						erase_unique(first++);
 				}
 
-				void	erase_unique(const key_type& key)
+				size_type	erase_unique(const key_type& key)
 				{
 					iterator	i = this->find(key);
 					if (i != end())
+					{
 						this->erase_unique(i);
+						return (1);
+					}
+					return (0);
 				}
 
 				void	print() const
