@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/03 14:19:44 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/03 15:54:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -629,6 +629,11 @@ namespace ft
 					return (_M_insert_unique_value(hint, v));
 				}
 
+				const_iterator	insert_unique(const_iterator hint, const value_type& v)
+				{
+					return (_M_insert_unique_value(hint, v));
+				}
+
 				void	erase_unique(iterator pos)
 				{
 					rbt_delete_node(pos._M_node, _M_base._M_header);
@@ -636,7 +641,24 @@ namespace ft
 					_M_base._M_nbr_node--;
 				}
 
+				void	erase_unique(const_iterator pos)
+				{
+					base_node_ptr	node = const_cast<base_node_ptr>(pos._M_node);
+
+					rbt_delete_node(node, _M_base._M_header);
+					_M_destroy_node(static_cast<node_ptr>(node));
+					_M_base._M_nbr_node--;
+				}
+
 				void	erase_unique(iterator first, iterator end)
+				{
+					if (first == begin() && end == this->end())
+						return (clear());
+					while (first != end)
+						erase_unique(first++);
+				}
+
+				void	erase_unique(const_iterator first, const_iterator end)
 				{
 					if (first == begin() && end == this->end())
 						return (clear());
@@ -833,6 +855,7 @@ namespace ft
 
 				/* ########################### Private structure ############################ */
 
+				// All the const_iterator variant are needed for set, since a const_iterator and an iterator is the same type.
 				void	_M_erase(node_ptr x)
 				{
 					while (x != NULL)
@@ -854,6 +877,16 @@ namespace ft
 					return (iterator(z));
 				}
 
+				const_iterator _M_insert(const bool insert_left, const_base_node_ptr p, const value_type& val)
+				{
+					node_ptr	z;
+
+					z = _M_create_node(val);
+					rbt_insert_n_balance(insert_left, z, const_cast<base_node_ptr>(p), _M_base._M_header);
+					_M_base._M_nbr_node++;
+					return (const_iterator(z));
+				}
+
 				// insert an unique value into the tree.
 				// if a value exist, the function return the iterator
 				ft::pair<iterator, bool>	_M_insert_unique_value(const value_type& v)
@@ -871,15 +904,29 @@ namespace ft
 						(comp) ? x = _S_left(x) : x = _S_right(x);
 					}
 					if (comp)
-					{
-						//std::cout << "Insertion of key " << KeyOfValue()(v) << " left.\n";
 						return (ft::pair<iterator, bool>(_M_insert(true, y, v), true));
-					}
 					else
-					{
-						//std::cout << "Insertion of key " << KeyOfValue()(v) << " right.\n";
 						return (ft::pair<iterator, bool>(_M_insert(false, y, v), true));
+				}
+
+				ft::pair<const_iterator, bool>	_M_insert_unique_value(const value_type& v) const
+				{
+					const_node_ptr	x = _M_begin(); // root
+					const_node_ptr	y = _M_end();   // header
+					bool		comp = true;
+
+					while (x != NULL)
+					{
+						y = x;
+						if (!_M_base._M_key_cmp(KeyOfValue()(v), _S_key(x)) && !_M_base._M_key_cmp(_S_key(x), KeyOfValue()(v)))
+							return (ft::pair<const_iterator, bool>(iterator(x), false));
+						comp = _M_base._M_key_cmp(KeyOfValue()(v), _S_key(x));
+						(comp) ? x = _S_left(x) : x = _S_right(x);
 					}
+					if (comp)
+						return (ft::pair<const_iterator, bool>(_M_insert(true, y, v), true));
+					else
+						return (ft::pair<const_iterator, bool>(_M_insert(false, y, v), true));
 				}
 
 				iterator	_M_insert_unique_value(iterator hint, const value_type& v)
@@ -932,6 +979,51 @@ namespace ft
 							return (insert_unique(v).first);
 					}
 					// the value to insert as q key equal that the hint : simply return the iterator.
+					else
+						return (hint);
+				}
+
+				const_iterator	_M_insert_unique_value(const_iterator hint, const value_type& v)
+				{
+					if (hint._M_node == _M_end())
+					{
+						if (size() > 0 && _M_base._M_key_cmp(_S_key(_M_rightmost()), KeyOfValue()(v)))
+							return (_M_insert(false, _M_rightmost(), v));
+						else
+							return (const_iterator(insert_unique(v).first));
+					}
+					else if (_M_base._M_key_cmp(KeyOfValue()(v), _S_key(hint._M_node)))
+					{
+						const_iterator	before = --hint;
+
+						if (hint._M_node == _M_leftmost())
+							return (_M_insert(true, _M_leftmost(), v));
+						else if (_M_base._M_key_cmp(_S_key(before._M_node), KeyOfValue()(v)))
+						{
+							if (_S_right(before._M_node) == NULL)
+								return (_M_insert(false, before._M_node, v));
+							else
+								return (_M_insert(true, hint._M_node, v));
+						}
+						else
+							return (const_iterator(insert_unique(v).first));
+					}
+					else if (_M_base._M_key_cmp(_S_key(hint._M_node), KeyOfValue()(v)))
+					{
+						const_iterator	after = ++hint;
+
+						if (hint._M_node == _M_rightmost())
+							return (_M_insert(false, _M_rightmost(), v));
+						else if (_M_base._M_key_cmp(KeyOfValue()(v), _S_key(after._M_node)))
+						{
+							if (_S_right(hint._M_node) == NULL)
+								return (_M_insert(false, hint._M_node, v));
+							else
+								return (_M_insert(true, after._M_node, v));
+						}
+						else
+							return (const_iterator(insert_unique(v).first));
+					}
 					else
 						return (hint);
 				}

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/30 17:59:36 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/03 14:39:01 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/03 15:50:35 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,12 @@
 
 namespace ft
 {
+
+	/* set is different than map because :
+	 *
+	 *      -> it contains unique object of type Key instead of key-value pairs.
+	 *      -> set's element are immutable : you cannot change the value of a key.
+	 *      the following properties make set's iterator and const_iterator practically the same. */
 
 	template <class Key,
 			 class Compare = std::less<Key> >
@@ -38,9 +44,9 @@ namespace ft
 
 				typedef RBT<value_type, value_type, Identity<value_type>, key_compare>	tree_type;
 
-				typedef typename tree_type::iterator				iterator;
+				typedef typename tree_type::const_iterator			iterator;
 				typedef typename tree_type::const_iterator			const_iterator;
-				typedef typename tree_type::reverse_iterator		reverse_iterator;
+				typedef typename tree_type::const_reverse_iterator	reverse_iterator;
 				typedef typename tree_type::const_reverse_iterator	const_reverse_iterator;
 
 				class value_compare : public ft::binary_function<value_type, value_type, bool>
