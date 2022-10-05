@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/22 15:11:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/03 16:02:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/05 18:58:36 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,7 +215,7 @@ RBTNode_Base::base_ptr	rbt_node_increment(RBTNode_Base::base_ptr x) throw()
 				header._M_right = x;
 		}
 		//if (x != root)
-		//	rbt_insert_balance(x, header._M_parent);
+			//rbt_insert_balance(x, header._M_parent);
 		root->_M_color = black;
 	}
 
@@ -224,7 +224,10 @@ RBTNode_Base::base_ptr	rbt_node_increment(RBTNode_Base::base_ptr x) throw()
 		RBTNode_Base*&	root = header._M_parent;
 
 		if (u->_M_parent == &header)
+		{
 			root = v;
+			root->_M_parent = &header;
+		}
 		else if (u == u->_M_parent->_M_left)
 			u->_M_parent->_M_left = v;
 		else
@@ -235,40 +238,37 @@ RBTNode_Base::base_ptr	rbt_node_increment(RBTNode_Base::base_ptr x) throw()
 
 	void	rbt_delete_node(RBTNode_Base* z, RBTNode_Base& header)
 	{
-		if (z->_M_left == NULL)
+		if (z->_M_left == NULL) // case 1.
 		{
-			rbt_transplant(z, z->_M_right, header);
 			if (z == header._M_left)
 			{
-				if (z->_M_right)
-				{
-					if (z->_M_right->_M_left)
-						header._M_left = RBTNode_Base::minimum(z->_M_right->_M_left);
-					else
-						header._M_left = z->_M_right;
-				}
+				if (z->_M_right != NULL)
+					header._M_left = z->_M_right;
 				else
 					header._M_left = z->_M_parent;
 			}
+			else if (z == header._M_right) // the right node had to be NULL if z is the rightmost node so...
+				header._M_right = z->_M_parent;
+
+			rbt_transplant(z, z->_M_right, header);
 		}
-		else if (z->_M_right == NULL) // rightmost node..
+		else if (z->_M_right == NULL) // rightmost node.., left is non NULL !
 		{
-			rbt_transplant(z, z->_M_left, header);
 			if (z == header._M_right)
 			{
-				if (z->_M_left)
-				{
-					if (z->_M_left->_M_right)
-						header._M_right = RBTNode_Base::maximum(z->_M_left->_M_right);
-					else
-						header._M_right = z->_M_left;
-				}
+				if (z->_M_left != NULL)
+					header._M_right = z->_M_left;
 				else
 					header._M_right = z->_M_parent;
 			}
+			// cannot be the leftmost node, because it would be trigger in case 1
+
+			rbt_transplant(z, z->_M_left, header);
 		}
 		else // rightmost or leftmost node cannot have
 		{
+			// to be continued.
+			// here both are non null ! need to figure out
 			RBTNode_Base*	y = RBTNode_Base::minimum(z->_M_right);
 
 			if (y->_M_parent != z)

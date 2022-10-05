@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/30 17:59:36 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/03 15:50:35 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/05 14:57:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,8 +211,7 @@ namespace ft
 
 				size_type	erase(const key_type& key)
 				{
-					_M_tree.erase_unique(key);
-					return (1);
+					return (_M_tree.erase_unique(key));
 				}
 
 				// Returns an iterator pointing to the first element that is not less than key.
