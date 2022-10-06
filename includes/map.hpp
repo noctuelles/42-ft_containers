@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/21 13:10:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/06 15:13:02 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/06 18:03:33 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ namespace ft
 				typedef typename allocator_type::pointer			pointer;
 				typedef typename allocator_type::const_pointer		const_pointer;
 
+				// SelectFirst is the underlying functor use to select the first member of a pair.
 				typedef RBT<key_type, value_type, SelectFirst<value_type>, key_compare>	tree_type;
 
 				typedef typename tree_type::iterator				iterator;
@@ -95,12 +96,12 @@ namespace ft
 				}
 
 				~map()
-				{
-				}
+				{ /* no need to call anything.. */ }
 
 				map&	operator=(map& other)
 				{
-					_M_tree.operator=(other._M_tree);
+					if (this != &other)
+						_M_tree = other._M_tree;
 					return (*this);
 				}
 
@@ -341,7 +342,18 @@ namespace ft
 		}
 }
 
+/* Swap */
+
 namespace std
+{
+	template <class Key, class Value, class Compare>
+			void	swap(ft::map<Key, Value, Compare>& lhs, ft::map<Key, Value, Compare>& rhs)
+	{
+		lhs.swap(rhs);
+	}
+}
+
+namespace ft
 {
 	template <class Key, class Value, class Compare>
 			void	swap(ft::map<Key, Value, Compare>& lhs, ft::map<Key, Value, Compare>& rhs)

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:34:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/06 16:24:47 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/06 16:32:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,5 +99,4 @@ int	main()
 	v2.clear();
 	v2.assign(v.begin(), v.end());
 	print_vec(v); print_vec(v2);
-
 }

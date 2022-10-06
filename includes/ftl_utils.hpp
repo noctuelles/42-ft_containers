@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 14:58:34 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/30 16:57:42 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/06 17:45:58 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ namespace ft
 			typedef Result	result_type;
 		};
 
+	// A binary function is a function...
 	template <class FirstArg, class SecondArg, class Result>
 		struct binary_function
 		{

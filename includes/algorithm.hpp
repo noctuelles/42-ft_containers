@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/07 15:16:39 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/20 18:27:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/06 17:33:27 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 namespace ft
 {
+	/* Check if the range [first1, last1) is equal to the range [first2, (last1 - first1)) */
 	template <class InputIterator1, class InputIterator2>
 		bool	equal(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
 		{
