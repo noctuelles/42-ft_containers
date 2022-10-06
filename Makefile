@@ -14,13 +14,13 @@ SRCS_DIR	=	srcs
 
 OBJS_DIR	=	objs
 
-CFLAGS		=	-Wall -Werror -Wextra -std=c++98 -MD -g3 -fsanitize=address
+CFLAGS		=	-Wall -Werror -Wextra -std=c++98 -MD -g3 -fsanitize=address -D NAMESPACE=std
 
 CINCS		=	-I includes
 
 CC			=	c++
 
-SRCS		=	main.cpp
+SRCS		=	main_vector.cpp
 
 OBJS		=	$(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
 
@@ -41,6 +41,8 @@ $(OBJS_DIR):
 
 all:	$(NAME)
 
+
+
 clean:
 	$(RM) $(OBJS_DIR)
 
@@ -51,4 +53,4 @@ re:	fclean all
 
 -include $(DEPS)
 
-.PHONY:	all clean fclean re
+.PHONY:	all clean fclean re vector_test
