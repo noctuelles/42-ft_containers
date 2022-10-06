@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/30 17:59:36 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/05 14:57:38 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/06 15:13:43 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ namespace ft
 						{
 							return (comp(x, y));
 						}
+
 					protected:
 
 						value_compare(key_compare comp) : comp(comp) {}
@@ -278,10 +279,10 @@ namespace ft
 					_M_tree.swap(other._M_tree);
 				}
 
-				void	print() const
+				/*void	print() const
 				{
 					_M_tree.print();
-				}
+				}*/
 
 				template <class _Key, class _Compare>
 					friend inline bool	operator==(const set<_Key, _Compare>& x, const set<_Key, _Compare>& y);

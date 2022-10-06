@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/21 13:10:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/03 16:03:02 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/06 15:13:02 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,10 +287,10 @@ namespace ft
 					_M_tree.swap(other._M_tree);
 				}
 
-				void	print() const
+				/*void	print() const
 				{
 					_M_tree.print();
-				}
+				}*/
 
 				template <class _Key, class _Value, class _Compare>
 					friend inline bool	operator==(const map<_Key, _Value, _Compare>& x, const map<_Key, _Value, _Compare>& y);
