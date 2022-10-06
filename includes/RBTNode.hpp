@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/23 10:11:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/30 13:43:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/06 16:20:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <cctype>
 #include <memory>
+#include <cstdlib>
 
 /* This is an implementation of a Red Black Tree, which is one type of balanced
  * binary search tree, inspired by:
