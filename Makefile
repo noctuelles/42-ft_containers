@@ -57,13 +57,21 @@ stack: | tmp
 		$(call red, "Compiling stack test...")
 		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_ft $(STACK_SRCS) -D NAMESPACE=ft
 		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_std $(STACK_SRCS) -D NAMESPACE=std
-		$(call red, "Comparing output... a diff in capacity is acceptable.")
+		$(call red, "Comparing output...")
 		-@cd $(TMP_DIR) && \
 			./test_$@_ft > output_$@_ft && \
 			./test_$@_std > output_$@_std && \
 			diff --report-identical-files output_$@_ft output_$@_std 
 
 map: | tmp
+		$(call red, "Compiling map test...")
+		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_ft $(MAP_SRCS) -D NAMESPACE=ft
+		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_std $(MAP_SRCS) -D NAMESPACE=std
+		$(call red, "Comparing output...")
+		-@cd $(TMP_DIR) && \
+			./test_$@_ft > output_$@_ft && \
+			./test_$@_std > output_$@_std && \
+			diff --report-identical-files output_$@_ft output_$@_std 
 
 set: | tmp
 

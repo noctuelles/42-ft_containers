@@ -38,7 +38,7 @@ namespace test
 	timestamp_t	bench();
 
 	template <class T>
-		void hello(const T& arg)
+		void print(const T& arg)
 		{
 			std::cout << arg << '\n';
 		}
@@ -53,7 +53,7 @@ namespace test
 		if (print_content)
 		{
 			std::cout << "Content: \n";
-			std::for_each(v.begin(), v.end(), hello<T>);
+			std::for_each(v.begin(), v.end(), print<T>);
 		}
 		std::cerr << "DONE IN " << timestamp << "ms" << '\n';
 	}
