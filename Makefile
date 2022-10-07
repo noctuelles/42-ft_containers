@@ -6,11 +6,11 @@
 #    By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/08/21 12:26:43 by plouvel           #+#    #+#              #
-#    Updated: 2022/10/07 15:36:20 by plouvel          ###   ########.fr        #
+#    Updated: 2022/10/07 16:18:57 by plouvel          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-red = @/bin/echo -e "\x1b[31;1m\#\# $1\x1b[0m"
+red = @/bin/echo -e "\x1b[31;1;4m\#\# $1\x1b[0m"
 
 SRCS_DIR	=	srcs
 
@@ -18,7 +18,7 @@ OBJS_DIR	=	objs
 
 TMP_DIR     =	tmp
 
-CFLAGS		=	-Wall -Werror -Wextra -std=c++98 -g3
+CFLAGS		=	-Wall -Werror -Wextra -std=c++98 -g3 -fsanitize=address
 
 CINCS		=	-I includes
 
@@ -26,42 +26,56 @@ CC			=	c++
 
 VECTOR_SRCS		=	$(SRCS_DIR)/main_vector.cpp
 
-OBJS		=	$(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
+STACK_SRCS		=	$(SRCS_DIR)/main_stack.cpp
 
-NAME		=	ft_containers
+MAP_SRCS		=	$(SRCS_DIR)/main_map.cpp		\
+					$(SRCS_DIR)/RBT.cpp				\
+					$(SRCS_DIR)/RBTNode.cpp			\
+
+SET_SRCS		=	$(SRCS_DIR)/main_set.cpp		\
+					$(SRCS_DIR)/RBT.cpp				\
+					$(SRCS_DIR)/RBTNode.cpp			\
 
 RM			=	rm -rf
-
-$(NAME):	$(OBJS) Makefile
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
-
-$(OBJS_DIR)/%.o:	$(SRCS_DIR)/%.cpp | $(OBJS_DIR)
-	$(CC) $(CFLAGS) $(CINCS) -c $< -o $@
 
 $(OBJS_DIR):
 	mkdir -p $@
 
-all:	$(NAME)
+all:	vector stack
 
 vector: | tmp
-		$(call red, "Compiling...")
-		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_vector_ft $(VECTOR_SRCS) -D NAMESPACE=ft
-		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_vector_std $(VECTOR_SRCS) -D NAMESPACE=std
+		$(call red, "Compiling vector test...")
+		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_ft $(VECTOR_SRCS) -D NAMESPACE=ft
+		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_std $(VECTOR_SRCS) -D NAMESPACE=std
 		$(call red, "Comparing output... a diff in capacity is acceptable.")
 		-@cd $(TMP_DIR); \
-			./test_vector_ft > output_vector_ft; \
-			./test_vector_std > output_vector_std; \
-			diff output_vector_ft output_vector_std 
+			./test_$@_ft > output_$@_ft; \
+			./test_$@_std > output_$@_std; \
+			diff --report-identical-files output_$@_ft output_$@_std 
+
+stack: | tmp
+		$(call red, "Compiling stack test...")
+		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_ft $(STACK_SRCS) -D NAMESPACE=ft
+		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_std $(STACK_SRCS) -D NAMESPACE=std
+		$(call red, "Comparing output... a diff in capacity is acceptable.")
+		-@cd $(TMP_DIR) && \
+			./test_$@_ft > output_$@_ft && \
+			./test_$@_std > output_$@_std && \
+			diff --report-identical-files output_$@_ft output_$@_std 
+
+map: | tmp
+
+set: | tmp
 
 clean:
-	$(RM) $(OBJS_DIR)
+	$(RM) $(TMP_DIR)/test_*
 
 fclean: clean
-	$(RM) $(NAME)
+	$(RM) $(TMP_DIR)
 
 re:	fclean all
 
 tmp:
 	mkdir -p $@ 
 
-.PHONY:	all clean fclean re vector
+.PHONY:	all clean fclean re vector stack map set

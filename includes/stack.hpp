@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/19 18:46:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/03 15:13:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/07 16:02:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,9 @@ namespace ft
 
 				stack&	operator=(const stack& other)
 				{
-					c = other.c;
+					if (this != &other)
+						c = other.c;
+					return (*this);
 				}
 
 				/* ############################# Element Access ############################# */

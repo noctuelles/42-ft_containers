@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:34:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/07 15:41:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/07 15:54:53 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,7 +211,7 @@ void comp_test()
 	std::cout << ">= : " << std::boolalpha << (v0 >= v1) << '\n';
 }
 
-int	main()
+int	main(void)
 {
 	std::cout << "## THIS TEST SHOULD BE DIFF, YOU'VE BEEN WARNED ##\n\n";
 	insertion_test();
