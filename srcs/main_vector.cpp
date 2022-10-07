@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main_test.cpp                                      :+:      :+:    :+:   */
+/*   main_vector.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:34:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/06 16:32:25 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/07 15:41:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,9 +157,58 @@ void	capacity_test()
 	std::cout << v.capacity() << '\n';
 }
 
-void	construct_assign_test()
+void	construct_assign_swap_test()
 {
+	{
+		NAMESPACE::vector<std::string> v0(50, "BONJOUR42");
+		NAMESPACE::vector<std::string> v1(v0.begin(), v0.end());
+		NAMESPACE::vector<std::string> v2(v0);
+		print_vec(v0);
+		print_vec(v1);
+		print_vec(v2);
+	}
 
+	{
+		NAMESPACE::vector<std::string> v0(5, "OKBOOMER");
+		NAMESPACE::vector<std::string> v1;
+
+		v0.assign(10, "CACAPROUT");
+		v1.assign(v0.begin(), v0.end());
+		print_vec(v0);
+		print_vec(v1);
+		v1.push_back("MAKE ME PROUD");
+		v0.swap(v1);
+		print_vec(v0);
+		print_vec(v1);
+	}
+}
+
+
+void comp_test()
+{
+	print_banner("Comparaison test");
+	NAMESPACE::vector<std::string> v0;
+	NAMESPACE::vector<std::string> v1;
+
+	v0.push_back("A");
+	v0.push_back("B");
+	v0.push_back("C");
+	v1.assign(v0.begin(), v0.end());
+	print_vec(v1);
+	std::cout << "== : " << std::boolalpha << (v0 == v1) << '\n';
+	std::cout << "!= : " << std::boolalpha << (v0 != v1) << '\n';
+	v0.push_back("C");
+	std::cout << "< : " << std::boolalpha << (v0 < v1) << '\n';
+	std::cout << "> : " << std::boolalpha << (v0 > v1) << '\n';
+	std::cout << "<= : " << std::boolalpha << (v0 <= v1) << '\n';
+	std::cout << ">= : " << std::boolalpha << (v0 >= v1) << '\n';
+	v0.pop_back();
+	std::cout << "== : " << std::boolalpha << (v0 == v1) << '\n';
+	std::cout << "!= : " << std::boolalpha << (v0 != v1) << '\n';
+	std::cout << "< : " << std::boolalpha << (v0 < v1) << '\n';
+	std::cout << "> : " << std::boolalpha << (v0 > v1) << '\n';
+	std::cout << "<= : " << std::boolalpha << (v0 <= v1) << '\n';
+	std::cout << ">= : " << std::boolalpha << (v0 >= v1) << '\n';
 }
 
 int	main()
@@ -169,5 +218,6 @@ int	main()
 	access_test();
 	iterators_test();
 	capacity_test();
-	construct_assign_test();
+	construct_assign_swap_test();
+	comp_test();
 }

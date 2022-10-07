@@ -6,25 +6,27 @@
 #    By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/08/21 12:26:43 by plouvel           #+#    #+#              #
-#    Updated: 2022/09/19 19:25:07 by plouvel          ###   ########.fr        #
+#    Updated: 2022/10/07 15:36:20 by plouvel          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
+red = @/bin/echo -e "\x1b[31;1m\#\# $1\x1b[0m"
 
 SRCS_DIR	=	srcs
 
 OBJS_DIR	=	objs
 
-CFLAGS		=	-Wall -Werror -Wextra -std=c++98 -MD -g3 -fsanitize=address -D NAMESPACE=std
+TMP_DIR     =	tmp
+
+CFLAGS		=	-Wall -Werror -Wextra -std=c++98 -g3
 
 CINCS		=	-I includes
 
 CC			=	c++
 
-SRCS		=	main_vector.cpp
+VECTOR_SRCS		=	$(SRCS_DIR)/main_vector.cpp
 
 OBJS		=	$(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
-
-DEPS		=	$(addprefix $(OBJS_DIR)/, $(SRCS=.cpp=.d))
 
 NAME		=	ft_containers
 
@@ -41,7 +43,15 @@ $(OBJS_DIR):
 
 all:	$(NAME)
 
-
+vector: | tmp
+		$(call red, "Compiling...")
+		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_vector_ft $(VECTOR_SRCS) -D NAMESPACE=ft
+		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_vector_std $(VECTOR_SRCS) -D NAMESPACE=std
+		$(call red, "Comparing output... a diff in capacity is acceptable.")
+		-@cd $(TMP_DIR); \
+			./test_vector_ft > output_vector_ft; \
+			./test_vector_std > output_vector_std; \
+			diff output_vector_ft output_vector_std 
 
 clean:
 	$(RM) $(OBJS_DIR)
@@ -51,6 +61,7 @@ fclean: clean
 
 re:	fclean all
 
--include $(DEPS)
+tmp:
+	mkdir -p $@ 
 
-.PHONY:	all clean fclean re vector_test
+.PHONY:	all clean fclean re vector
