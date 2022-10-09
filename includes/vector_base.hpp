@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/16 19:14:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/09/19 16:44:43 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/09 18:44:44 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ namespace ft
 		};
 
 	// Overload of std::swap for vector_base.
-	template <class T>
+		template <class T>
 		void	swap(vector_base<T>& a, vector_base<T>& b)
 		{
 			std::swap(a._allocator, b._allocator);

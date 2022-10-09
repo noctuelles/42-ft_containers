@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 10:31:31 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/09 15:53:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/09 18:48:37 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -342,7 +342,7 @@ namespace ft
 
 				void	resize(size_type count, T value = T())
 				{
-					if (count <= size())
+					if (count < size())
 					{
 						for (pointer p = this->_begin + count; p != this->_last; p++)
 							this->_allocator.destroy(p);
@@ -516,12 +516,9 @@ namespace ft
 		{
 			return !(lhs < rhs);
 		}
-}
 
-namespace ft
-{
 	template <class T>
-		void	swap(ft::vector<T> lhs, ft::vector<T> rhs)
+		void	swap(ft::vector<T>& lhs, ft::vector<T>& rhs)
 		{
 			lhs.swap(rhs);
 		}
