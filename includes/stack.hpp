@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/19 18:46:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/07 16:02:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/09 19:01:26 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ namespace ft
 				template <class _T, class _Container>
 					friend inline bool	operator<(const stack<_T, _Container>& lhs, const stack<_T, _Container>& rhs);
 
-			private:
+			protected:
 
 				Container	c;
 		};
