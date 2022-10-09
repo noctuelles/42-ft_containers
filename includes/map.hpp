@@ -6,7 +6,7 @@
 /*   By: plouvel <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/21 13:10:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/06 18:03:33 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/09 15:59:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -340,17 +340,6 @@ namespace ft
 		{
 			return !(x < y);
 		}
-}
-
-/* Swap */
-
-namespace std
-{
-	template <class Key, class Value, class Compare>
-			void	swap(ft::map<Key, Value, Compare>& lhs, ft::map<Key, Value, Compare>& rhs)
-	{
-		lhs.swap(rhs);
-	}
 }
 
 namespace ft

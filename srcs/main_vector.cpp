@@ -6,11 +6,12 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:34:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/07 15:54:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/09 16:47:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "vector.hpp"
+#include "test_utils.hpp"
 #include <vector>
 #include <list>
 
@@ -211,13 +212,30 @@ void comp_test()
 	std::cout << ">= : " << std::boolalpha << (v0 >= v1) << '\n';
 }
 
+void	speed_test()
+{
+	NAMESPACE::vector<int>	v;
+	NAMESPACE::vector<int>	v1;
+	NAMESPACE::vector<NAMESPACE::vector<int> > v_of_v;
+
+	for (int i = 0; i < 99999999; i++)
+		v.push_back(i);
+	v1 = v;
+	v_of_v.assign(10, v1);
+	v1.insert(v1.end(), v.begin(), v.end());
+	v1.clear();
+	v1.insert(v1.end(), v.begin(), v.end());
+}
+
 int	main(void)
 {
-	std::cout << "## THIS TEST SHOULD BE DIFF, YOU'VE BEEN WARNED ##\n\n";
+	bench();
 	insertion_test();
 	access_test();
 	iterators_test();
 	capacity_test();
 	construct_assign_swap_test();
 	comp_test();
+	speed_test();
+	std::cout << "The test took " << bench() << "ms to complete.\n";
 }

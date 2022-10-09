@@ -6,84 +6,111 @@
 #    By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/08/21 12:26:43 by plouvel           #+#    #+#              #
-#    Updated: 2022/10/07 16:18:57 by plouvel          ###   ########.fr        #
+#    Updated: 2022/10/09 17:35:44 by plouvel          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 red = @/bin/echo -e "\x1b[31;1;4m\#\# $1\x1b[0m"
+green = @/bin/echo -e "\x1b[32;1;4m\#\# $1\x1b[0m"
 
-SRCS_DIR	=	srcs
+SRCS_DIR		=	srcs
 
-OBJS_DIR	=	objs
+OBJS_DIR		=	objs
 
-TMP_DIR     =	tmp
+TEST_OUT_DIR	 =	test_out
 
-CFLAGS		=	-Wall -Werror -Wextra -std=c++98 -g3 -fsanitize=address
+ASAN		=	-fsanitize=address
+
+CFLAGS		=	-Wall -Werror -Wextra -std=c++98 -g3 $(ASAN) 
 
 CINCS		=	-I includes
 
 CC			=	c++
 
-VECTOR_SRCS		=	$(SRCS_DIR)/main_vector.cpp
+VECTOR_SRCS		=	main_vector.cpp		\
+					test_utils.cpp
 
-STACK_SRCS		=	$(SRCS_DIR)/main_stack.cpp
+STACK_SRCS		=	main_stack.cpp
 
-MAP_SRCS		=	$(SRCS_DIR)/main_map.cpp		\
-					$(SRCS_DIR)/RBT.cpp				\
-					$(SRCS_DIR)/RBTNode.cpp			\
+MAP_SRCS		=	main_map.cpp		\
+					RBT.cpp				\
+					RBTNode.cpp			\
+					test_utils.cpp
 
-SET_SRCS		=	$(SRCS_DIR)/main_set.cpp		\
-					$(SRCS_DIR)/RBT.cpp				\
-					$(SRCS_DIR)/RBTNode.cpp			\
+VECTOR_OBJS_FT		=	$(addprefix $(OBJS_DIR)/, $(VECTOR_SRCS:.cpp=.o.ft))
+VECTOR_OBJS_STD		=	$(addprefix $(OBJS_DIR)/, $(VECTOR_SRCS:.cpp=.o.std))
+
+STACK_OBJS_FT		=	$(addprefix $(OBJS_DIR)/, $(STACK_SRCS:.cpp=.o.ft))
+STACK_OBJS_STD		=	$(addprefix $(OBJS_DIR)/, $(STACK_SRCS:.cpp=.o.std))
+
+MAP_OBJS_FT		=	$(addprefix $(OBJS_DIR)/, $(MAP_SRCS:.cpp=.o.ft))
+MAP_OBJS_STD	=	$(addprefix $(OBJS_DIR)/, $(MAP_SRCS:.cpp=.o.std))
 
 RM			=	rm -rf
 
-$(OBJS_DIR):
-	mkdir -p $@
+all:	test_vector test_stack test_map
 
-all:	vector stack
+test_vector_ft: $(VECTOR_OBJS_FT)
+		$(CC) $(ASAN) $(CINCS) -o $@ $(VECTOR_OBJS_FT) -D NAMESPACE=ft
 
-vector: | tmp
-		$(call red, "Compiling vector test...")
-		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_ft $(VECTOR_SRCS) -D NAMESPACE=ft
-		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_std $(VECTOR_SRCS) -D NAMESPACE=std
-		$(call red, "Comparing output... a diff in capacity is acceptable.")
-		-@cd $(TMP_DIR); \
-			./test_$@_ft > output_$@_ft; \
-			./test_$@_std > output_$@_std; \
-			diff --report-identical-files output_$@_ft output_$@_std 
+test_vector_std: $(VECTOR_OBJS_STD)
+		$(CC) $(ASAN) $(CINCS) -o $@ $(VECTOR_OBJS_STD) -D NAMESPACE=std
 
-stack: | tmp
-		$(call red, "Compiling stack test...")
-		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_ft $(STACK_SRCS) -D NAMESPACE=ft
-		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_std $(STACK_SRCS) -D NAMESPACE=std
-		$(call red, "Comparing output...")
-		-@cd $(TMP_DIR) && \
-			./test_$@_ft > output_$@_ft && \
-			./test_$@_std > output_$@_std && \
-			diff --report-identical-files output_$@_ft output_$@_std 
+test_vector: test_vector_ft test_vector_std | $(TEST_OUT_DIR)
+		$(call green, "Comparing vector output... a diff in capacity is acceptable.")
+		./$< > $(TEST_OUT_DIR)/$<_output
+		./$(word 2, $^) > $(TEST_OUT_DIR)/$(word 2, $^)_output
+		-@cd $(TEST_OUT_DIR) && \
+			diff --unified=0 --report-identical-files $<_output $(word 2, $^)_output
+		$(call red, "End of vector test.")
 
-map: | tmp
-		$(call red, "Compiling map test...")
-		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_ft $(MAP_SRCS) -D NAMESPACE=ft
-		$(CC) $(CFLAGS) $(CINCS) -o $(TMP_DIR)/test_$@_std $(MAP_SRCS) -D NAMESPACE=std
-		$(call red, "Comparing output...")
-		-@cd $(TMP_DIR) && \
-			./test_$@_ft > output_$@_ft && \
-			./test_$@_std > output_$@_std && \
-			diff --report-identical-files output_$@_ft output_$@_std 
+test_stack_ft: $(STACK_OBJS_FT)
+		$(CC) $(ASAN) $(CINCS) -o $@ $(STACK_OBJS_FT) -D NAMESPACE=ft
 
-set: | tmp
+test_stack_std: $(STACK_OBJS_STD)
+		$(CC) $(ASAN) $(CINCS) -o $@ $(STACK_OBJS_STD) -D NAMESPACE=std
+
+test_stack: test_stack_ft test_stack_std | $(TEST_OUT_DIR)
+		$(call green, "Comparing stack output...")
+		./$< > $(TEST_OUT_DIR)/$<_output
+		./$(word 2, $^) > $(TEST_OUT_DIR)/$(word 2, $^)_output
+		-@cd $(TEST_OUT_DIR) && \
+			diff --unified=0 --report-identical-files $<_output $(word 2, $^)_output
+		$(call red, "End of stack test.")
+
+test_map_ft: $(MAP_OBJS_FT)
+		$(CC) $(ASAN) $(CINCS) -o $@ $(MAP_OBJS_FT) -D NAMESPACE=ft
+
+test_map_std: $(MAP_OBJS_STD)
+		$(CC) $(ASAN) $(CINCS) -o $@ $(MAP_OBJS_STD) -D NAMESPACE=std
+
+test_map: test_map_ft test_map_std | $(TEST_OUT_DIR)
+		$(call green, "Comparing map output...")
+		./$< > $(TEST_OUT_DIR)/$<_output
+		./$(word 2, $^) > $(TEST_OUT_DIR)/$(word 2, $^)_output
+		-@cd $(TEST_OUT_DIR) && \
+			diff --unified=0 --report-identical-files $<_output $(word 2, $^)_output
+		$(call red, "End of map test.")
 
 clean:
-	$(RM) $(TMP_DIR)/test_*
+	$(RM) $(OBJS_DIR)
 
 fclean: clean
-	$(RM) $(TMP_DIR)
+	$(RM) $(TEST_OUT_DIR)
+	$(RM) test_*
 
 re:	fclean all
 
-tmp:
-	mkdir -p $@ 
+$(OBJS_DIR)/%.o.ft:	$(SRCS_DIR)/%.cpp | $(OBJS_DIR)
+	$(CC) $(CFLAGS) $(CINCS) -c $< -o $@ -D NAMESPACE=ft
 
-.PHONY:	all clean fclean re vector stack map set
+$(OBJS_DIR)/%.o.std:	$(SRCS_DIR)/%.cpp | $(OBJS_DIR)
+	$(CC) $(CFLAGS) $(CINCS) -c $< -o $@ -D NAMESPACE=std
+
+$(OBJS_DIR):
+	@mkdir -p $@
+
+$(TEST_OUT_DIR):
+	@mkdir -p $@ 
+
+.PHONY:	all clean fclean re test_vector test_stack test_map
