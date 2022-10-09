@@ -6,7 +6,7 @@
 #    By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/08/21 12:26:43 by plouvel           #+#    #+#              #
-#    Updated: 2022/10/09 17:35:44 by plouvel          ###   ########.fr        #
+#    Updated: 2022/10/09 18:54:27 by plouvel          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -97,7 +97,12 @@ clean:
 
 fclean: clean
 	$(RM) $(TEST_OUT_DIR)
-	$(RM) test_*
+	@$(RM) test_vector_ft
+	@$(RM) test_vector_std
+	@$(RM) test_stack_ft
+	@$(RM) test_stack_std
+	@$(RM) test_map_ft
+	@$(RM) test_map_std
 
 re:	fclean all
 
